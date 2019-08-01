@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GameBase.Console
 {
-    public abstract class AbstractConsoleItemsContainer<CC> : AbstractConsoleComponent where CC : AbstractConsoleComponent
+    public abstract class AbstractConsoleItemsContainer<CC> : AbstractConsoleElement where CC : AbstractConsoleElement
     {
         public AbstractConsoleItemsContainer(string name) : base(name) { }
 

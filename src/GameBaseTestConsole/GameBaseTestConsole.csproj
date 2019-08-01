@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BB28C9FD-64AA-4DE1-89F6-298312235045}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GameBase.Console</RootNamespace>
-    <AssemblyName>GameBase.Console</AssemblyName>
+    <ProjectGuid>{08AFAE2F-C3B1-45CC-AE6A-300BF38BEB59}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>GameBase</RootNamespace>
+    <AssemblyName>GameBase</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -32,7 +34,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,26 +42,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractConsoleElement.cs" />
-    <Compile Include="ConsoleBox.cs" />
-    <Compile Include="ConsoleContainer.cs" />
-    <Compile Include="ConsoleSpacing.cs" />
-    <Compile Include="ConsoleWindow.cs" />
-    <Compile Include="ConsoleFlowContainer.cs" />
-    <Compile Include="AbstractConsoleItemsContainer.cs" />
-    <Compile Include="ConsoleGrid.cs" />
-    <Compile Include="ConsoleListBox.cs" />
-    <Compile Include="ConsoleTextBox.cs" />
-    <Compile Include="PointExtensions.cs" />
-    <Compile Include="VerticalAlignment.cs" />
-    <Compile Include="HorizontalAlignment.cs" />
-    <Compile Include="IRunnable.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RenderTools.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\game-base\src\GameBase.Model\GameBase.Model.csproj">
-      <Project>{45cfc74e-2b9d-4ed3-82ef-617e3f4404b2}</Project>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GameBase.Console\GameBase.Console.csproj">
+      <Project>{BB28C9FD-64AA-4DE1-89F6-298312235045}</Project>
+      <Name>GameBase.Console</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GameBase.Model\GameBase.Model.csproj">
+      <Project>{45CFC74E-2B9D-4ED3-82EF-617E3F4404B2}</Project>
       <Name>GameBase.Model</Name>
     </ProjectReference>
   </ItemGroup>

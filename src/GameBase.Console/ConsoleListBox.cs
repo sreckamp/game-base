@@ -1,14 +1,10 @@
 ﻿using GameBase.Model;
 using System;
-using SConsole = System.Console;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
 
 namespace GameBase.Console
 {
-    public class ConsoleListBox<CC> : AbstractConsoleItemsContainer<CC> where CC:AbstractConsoleComponent
+    public class ConsoleListBox<CC> : AbstractConsoleItemsContainer<CC> where CC:AbstractConsoleElement
     {
         public ConsoleListBox(string name = null) : base(name) { }
 
@@ -104,36 +100,36 @@ namespace GameBase.Console
             base.OnSelectionChanged(old, value);
         }
 
-        private int m_itemWidth;
-        private int m_itemHeight;
+        //private int m_itemWidth;
+        //private int m_itemHeight;
 
-        protected override void ComponentLayout(ref int layoutWidth, ref int layoutHeight)
-        {
-            m_itemWidth = m_itemHeight = 0;
-            if (ItemsSource != null)
-            {
-                foreach (var item in ItemsSource)
-                {
-                    item.Layout(layoutWidth, layoutHeight);
-                    m_itemWidth = Math.Max(m_itemWidth, item.ActualWidth);
-                    m_itemHeight = Math.Max(m_itemHeight, item.ActualHeight);
-                }
-                if (IsHorizontalLayout)
-                {
-                    layoutHeight = m_itemHeight + 2;
-                    layoutWidth = (m_itemWidth + 1) * ItemsSource.Count + 1;
-                }
-                else
-                {
-                    layoutWidth = m_itemWidth + 2;
-                    layoutHeight = (m_itemHeight + 1) * ItemsSource.Count + 1;
-                }
-            }
-            else
-            {
-                layoutWidth = layoutHeight = 0;
-            }
-        }
+        //protected override void ComponentLayout(ref int layoutWidth, ref int layoutHeight)
+        //{
+        //    m_itemWidth = m_itemHeight = 0;
+        //    if (ItemsSource != null)
+        //    {
+        //        foreach (var item in ItemsSource)
+        //        {
+        //            item.Layout(layoutWidth, layoutHeight);
+        //            m_itemWidth = Math.Max(m_itemWidth, item.ActualWidth);
+        //            m_itemHeight = Math.Max(m_itemHeight, item.ActualHeight);
+        //        }
+        //        if (IsHorizontalLayout)
+        //        {
+        //            layoutHeight = m_itemHeight + 2;
+        //            layoutWidth = (m_itemWidth + 1) * ItemsSource.Count + 1;
+        //        }
+        //        else
+        //        {
+        //            layoutWidth = m_itemWidth + 2;
+        //            layoutHeight = (m_itemHeight + 1) * ItemsSource.Count + 1;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        layoutWidth = layoutHeight = 0;
+        //    }
+        //}
 
         protected override void OnIsEnabledChanged(bool oldVal, bool newVal)
         {
@@ -148,45 +144,130 @@ namespace GameBase.Console
         }
 
         private int m_lastActiveIndex = -1;
-        protected override void ComponentRender(int left, int top)
+        //protected override void ComponentRender(int left, int top)
+        //{
+        //    if (m_lastActiveIndex >= 0 && m_lastActiveIndex != overIndex)
+        //    {
+        //        if (IsHorizontalLayout)
+        //        {
+        //            RenderBlank(left + m_lastActiveIndex * (m_itemWidth + 1), top, m_itemWidth * 2, m_itemHeight * 2);
+        //        }
+        //        else
+        //        {
+        //            RenderBlank(left, top + m_lastActiveIndex * (m_itemHeight + 1), m_itemWidth * 2, m_itemHeight * 2);
+        //        }
+        //    }
+        //    if (ItemsSource != null)
+        //    {
+        //        for (int i = 0; i < ItemsSource.Count; i++)
+        //        {
+        //            var item = ItemsSource[i];
+        //            int x = left + 1, y = top + 1;
+        //            if (IsHorizontalLayout)
+        //            {
+        //                x += (m_itemWidth + 1) * i;
+        //            }
+        //            else
+        //            {
+        //                y += (m_itemHeight + 1) * i;
+        //            }
+        //            item.Render(x, y, null, (SelectedIndex == i ? (ConsoleColor?)SelectionColor : null));
+        //        }
+        //    }
+        //    if (overIndex >= 0)
+        //    {
+        //        if (IsHorizontalLayout)
+        //        {
+        //            RenderBox(left + overIndex * (m_itemWidth + 1), top, m_itemWidth * 2, m_itemHeight * 2);
+        //        }
+        //        else
+        //        {
+        //            RenderBox(left, top + overIndex * (m_itemHeight + 1), m_itemWidth * 2, m_itemHeight * 2);
+        //        }
+        //    }
+        //    m_lastActiveIndex = overIndex;
+        //}
+
+        public override Size MeasureOverride(Size availableSize)
         {
-            if (m_lastActiveIndex >= 0 && m_lastActiveIndex != overIndex)
-            {
-                if (IsHorizontalLayout)
-                {
-                    RenderBlank(left + m_lastActiveIndex * (m_itemWidth + 1), top, m_itemWidth * 2, m_itemHeight * 2);
-                }
-                else
-                {
-                    RenderBlank(left, top + m_lastActiveIndex * (m_itemHeight + 1), m_itemWidth * 2, m_itemHeight * 2);
-                }
-            }
+            var size = new Size(0, 0);
+            //m_itemWidth = m_itemHeight = 0;
             if (ItemsSource != null)
             {
-                for (int i=0; i < ItemsSource.Count;i++)
+                size = IsHorizontalLayout ? new Size(1, 0) : new Size(0, 1);
+                foreach (var item in ItemsSource)
                 {
-                    var item = ItemsSource[i];
-                    int x = left + 1, y = top + 1;
-                    if(IsHorizontalLayout)
+                    item.Measure(availableSize);
+                    //item.Layout(layoutWidth, layoutHeight);
+                    if (IsHorizontalLayout)
                     {
-                        x += (m_itemWidth + 1) * i;
+                        size = new Size(size.Width + item.DesiredSize.Width + 1, Math.Max(size.Height, item.DesiredSize.Height + 2));
                     }
                     else
                     {
-                        y += (m_itemHeight + 1) * i;
+                        size = new Size(Math.Max(size.Width, item.DesiredSize.Width + 2), size.Height + item.DesiredSize.Height + 1);
+                        //layoutWidth = m_itemWidth + 2;
+                        //layoutHeight = (m_itemHeight + 1) * ItemsSource.Count + 1;
                     }
-                    item.Render(x, y, null, (SelectedIndex == i ? (ConsoleColor?)SelectionColor:null));
+
+                    //m_itemWidth = Math.Max(m_itemWidth, item.ActualWidth);
+                    //m_itemHeight = Math.Max(m_itemHeight, item.ActualHeight);
+                }
+            }
+            //else
+            //{
+            //    layoutWidth = layoutHeight = 0;
+            //}
+            return size;
+        }
+
+        public override Size ArrangeOverride(Size availableSize)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void RenderOverride(IConsoleContext context)
+        {
+            if (m_lastActiveIndex >= 0 && m_lastActiveIndex != overIndex)
+            {
+                //if (IsHorizontalLayout)
+                //{
+                //    //RenderTools.RenderBlank(context, left, top, )
+                //    RenderBlank(left + m_lastActiveIndex * (m_itemWidth + 1), top, m_itemWidth * 2, m_itemHeight * 2);
+                //}
+                //else
+                //{
+                //    RenderBlank(left, top + m_lastActiveIndex * (m_itemHeight + 1), m_itemWidth * 2, m_itemHeight * 2);
+                //}
+            }
+            if (ItemsSource != null)
+            {
+                for (int i = 0; i < ItemsSource.Count; i++)
+                {
+                    var item = ItemsSource[i];
+                    int x = /*left*/ + 1, y = /*top*/ + 1;
+                    //if (IsHorizontalLayout)
+                    //{
+                    //    x += (m_itemWidth + 1) * i;
+                    //}
+                    //else
+                    //{
+                    //    y += (m_itemHeight + 1) * i;
+                    //}
+                    item.Render(x, y, null, (SelectedIndex == i ? (ConsoleColor?)SelectionColor : null));
                 }
             }
             if (overIndex >= 0)
             {
                 if (IsHorizontalLayout)
                 {
-                    RenderBox(left + overIndex * (m_itemWidth + 1), top, m_itemWidth * 2, m_itemHeight * 2);
+                    RenderTools.RenderBox(context, 0/*left*/, 0/*top*/, 0, 0, ConsoleBorderStyle.Single);
+                    //RenderBox(left + overIndex * (m_itemWidth + 1), top, m_itemWidth * 2, m_itemHeight * 2);
                 }
                 else
                 {
-                    RenderBox(left, top + overIndex * (m_itemHeight + 1), m_itemWidth * 2, m_itemHeight * 2);
+                    RenderTools.RenderBox(context, 0/*left*/, 0/*top*/, 0, 0, ConsoleBorderStyle.Single);
+                    //RenderBox(left, top + overIndex * (m_itemHeight + 1), m_itemWidth * 2, m_itemHeight * 2);
                 }
             }
             m_lastActiveIndex = overIndex;

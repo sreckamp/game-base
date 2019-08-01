@@ -2,18 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
 
 namespace GameBase.Console
 {
-    public class ConsoleContainer:AbstractConsoleComponent
+    public class ConsoleContainer:AbstractConsoleElement
     {
-        protected Dictionary<AbstractConsoleComponent, RenderState> m_renderStates = new Dictionary<AbstractConsoleComponent, RenderState>();
+        protected Dictionary<AbstractConsoleElement, ConsoleMetadata> m_renderStates = new Dictionary<AbstractConsoleElement, ConsoleMetadata>();
         public ConsoleContainer(string name = null) : base(name)
         {
-            Children = new ObservableList<AbstractConsoleComponent>();
+            Children = new ObservableList<AbstractConsoleElement>();
             Children.CollectionChanged += childrenChanged;
         }
 
@@ -21,15 +19,15 @@ namespace GameBase.Console
         {
             if(e.NewItems != null)
             {
-                foreach (AbstractConsoleComponent cc in e.NewItems)
+                foreach (AbstractConsoleElement cc in e.NewItems)
                 {
                     cc.Invalidated += childLayoutInvalidated;
-                    m_renderStates.Add(cc, new RenderState());
+                    m_renderStates.Add(cc, new ConsoleMetadata());
                 }
             }
             if (e.OldItems != null)
             {
-                foreach (AbstractConsoleComponent cc in e.OldItems)
+                foreach (AbstractConsoleElement cc in e.OldItems)
                 {
                     cc.Invalidated -= childLayoutInvalidated;
                     m_renderStates.Remove(cc);
@@ -58,51 +56,51 @@ namespace GameBase.Console
             }
         }
 
-        public ObservableList<AbstractConsoleComponent> Children { get; private set; }
+        public ObservableList<AbstractConsoleElement> Children { get; private set; }
 
-        protected override void ComponentLayout(ref int layoutWidth, ref int layoutHeight)
-        {
-            int width = 0;
-            int height = 0;
-            bool layoutChanged = false;
-            foreach (var c in Children)
-            {
-                if(c.Layout(-1, -1))
-                {
-                    layoutChanged = true;
-                }
-                UpdateBounds(c.ActualWidth + (Padding.Left + Padding.Right), c.ActualHeight + (Padding.Top + Padding.Bottom), ref width, ref height);
-                m_renderStates[c].IsRenderRequired = layoutChanged;
-            }
-            if (width > 0 && height > 0)
-            {
-                layoutWidth = width;
-                layoutHeight = height;
-            }
-        }
+        //protected override void ComponentLayout(ref int layoutWidth, ref int layoutHeight)
+        //{
+        //    int width = 0;
+        //    int height = 0;
+        //    bool layoutChanged = false;
+        //    foreach (var c in Children)
+        //    {
+        //        if(c.Layout(-1, -1))
+        //        {
+        //            layoutChanged = true;
+        //        }
+        //        UpdateBounds(c.RenderSize.Width + (Padding.Left + Padding.Right), c.RenderSize.Height + (Padding.Top + Padding.Bottom), ref width, ref height);
+        //        m_renderStates[c].IsRenderRequired = layoutChanged;
+        //    }
+        //    if (width > 0 && height > 0)
+        //    {
+        //        layoutWidth = width;
+        //        layoutHeight = height;
+        //    }
+        //}
 
-        protected virtual void UpdateBounds(int layoutWidth, int layoutHeight, ref int width, ref int height)
-        {
-            width = Math.Max(width, layoutWidth);
-            height = Math.Max(height, layoutHeight);
-        }
+        //protected virtual void UpdateBounds(int layoutWidth, int layoutHeight, ref int width, ref int height)
+        //{
+        //    width = Math.Max(width, layoutWidth);
+        //    height = Math.Max(height, layoutHeight);
+        //}
 
-        protected override void ComponentRender(int left, int top)
-        {
-            foreach (var c in Children)
-            {
-                if (m_renderStates[c].IsRenderRequired)
-                {
-                    m_renderStates[c].IsRenderRequired = false;
-                    c.Render(left + Padding.Left, top + Padding.Top);
-                }
-                PostRender(c, ref left, ref top);
-            }
-        }
+        //protected override void ComponentRender(int left, int top)
+        //{
+        //    foreach (var c in Children)
+        //    {
+        //        if (m_renderStates[c].IsRenderRequired)
+        //        {
+        //            m_renderStates[c].IsRenderRequired = false;
+        //            c.Render(left + Padding.Left, top + Padding.Top);
+        //        }
+        //        PostRender(c, ref left, ref top);
+        //    }
+        //}
 
-        protected virtual void PostRender(AbstractConsoleComponent component, ref int left, ref int top)
-        {
-        }
+        //protected virtual void PostRender(AbstractConsoleElement component, ref int left, ref int top)
+        //{
+        //}
 
         protected override bool ComponentLineEntered(string line)
         {
@@ -124,7 +122,51 @@ namespace GameBase.Console
             return false;
         }
 
-        protected class RenderState
+        public override Size MeasureOverride(Size availableSize)
+        {
+            var size = new Size(0, 0);
+            //int width = 0;
+            //int height = 0;
+            //bool layoutChanged = false;
+            //availableSize - Padding
+            foreach (var c in Children)
+            {
+                c.Measure(availableSize);
+                size = new Size(Math.Max(c.DesiredSize.Width, size.Width), Math.Max(c.DesiredSize.Height, size.Height));
+                //UpdateBounds(c.ActualWidth + (Padding.Left + Padding.Right), c.ActualHeight + (Padding.Top + Padding.Bottom), ref width, ref height);
+                //m_renderStates[c].IsRenderRequired = layoutChanged;
+            }
+            //if (width > 0 && height > 0)
+            //{
+            //    layoutWidth = width;
+            //    layoutHeight = height;
+            //}
+            return size;
+        }
+
+        public override Size ArrangeOverride(Size availableSize)
+        {
+            var size = new Size(0, 0);
+            foreach (var c in Children)
+            {
+                //TODO Alignment
+                c.Arrange(new Rectangle(RenderLocation.X + Padding.Left, RenderLocation.Y + Padding.Top, 
+                    availableSize.Width - Padding.TotalSize.Width, availableSize.Height - Padding.TotalSize.Height));
+                size = new Size(Math.Max(c.RenderSize.Width + Padding.TotalSize.Width, size.Width),
+                    Math.Max(c.RenderSize.Height + Padding.TotalSize.Height, size.Height));
+            }
+            return size;
+        }
+
+        public override void RenderOverride(IConsoleContext context)
+        {
+            foreach (var c in Children)
+            {
+                c.Render(context);
+            }
+        }
+
+        protected class ConsoleMetadata
         {
             public bool IsRenderRequired = true;
             public int LastHeight = -1;

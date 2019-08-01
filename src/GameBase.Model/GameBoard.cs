@@ -68,7 +68,7 @@ namespace GameBase.Model
             {
                 var old = m_minX;
                 m_minX = value;
-                ChangedValueArgs<int>.Trigger(MinXChanged, this, old, value);
+                MinXChanged?.Invoke(this, new ChangedValueArgs<int>(old, value));
             }
         }
 
@@ -81,7 +81,7 @@ namespace GameBase.Model
             {
                 var old = m_maxX;
                 m_maxX = value;
-                ChangedValueArgs<int>.Trigger(MaxXChanged, this, old, value);
+                MaxXChanged?.Invoke(this, new ChangedValueArgs<int>(old, value));
             }
         }
 
@@ -94,7 +94,7 @@ namespace GameBase.Model
             {
                 var old = m_minY;
                 m_minY = value;
-                ChangedValueArgs<int>.Trigger(MinYChanged, this, old, value);
+                MinYChanged?.Invoke(this, new ChangedValueArgs<int>(old, value));
             }
         }
 
@@ -107,7 +107,7 @@ namespace GameBase.Model
             {
                 var old = m_maxY;
                 m_maxY = value;
-                ChangedValueArgs<int>.Trigger(MaxYChanged, this, old, value);
+                MaxYChanged?.Invoke(this, new ChangedValueArgs<int>(old, value));
             }
         }
 

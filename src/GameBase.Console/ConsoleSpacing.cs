@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,9 @@ namespace GameBase.Console
         public int Top;
         public int Right;
         public int Bottom;
+
+        public Point TopLeft => new Point(Top, Left);
+        public Size TotalSize => new Size(Left + Right, Top + Bottom);
 
         public override bool Equals(object obj)
         {
@@ -62,5 +66,10 @@ namespace GameBase.Console
 
         public static bool operator ==(ConsoleSpacing cs1, ConsoleSpacing cs2) => cs1.Equals(cs2);
         public static bool operator !=(ConsoleSpacing cs1, ConsoleSpacing cs2) => !cs1.Equals(cs2);
+
+        public static implicit operator ConsoleSpacing(int value)
+        {
+            return new ConsoleSpacing(value);
+        }
     }
 }

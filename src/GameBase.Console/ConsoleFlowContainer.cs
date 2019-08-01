@@ -1,14 +1,15 @@
 ﻿using GameBase.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Drawing;
 
 namespace GameBase.Console
 {
     public class ConsoleFlowContainer : ConsoleContainer
     {
+        public ConsoleFlowContainer(string name = null) : base(name)
+        {
+        }
         public event EventHandler<ChangedValueArgs<bool>> IsHorizontalLayoutChanged;
         private bool m_isHorizontalLayout = false;
         public bool IsHorizontalLayout
@@ -23,55 +24,64 @@ namespace GameBase.Console
             }
         }
 
-        //protected override void ComponentLayout(ref int layoutWidth, ref int layoutHeight)
-        //{
-        //    int width = 0;
-        //    int height = 0;
-        //    foreach (var c in Children)
-        //    {
-        //        c.Layout(-1, -1);
-        //        if (IsHorizontalLayout)
-        //        {
-        //            width += c.ActualWidth + Padding.Left + Padding.Right;
-        //            height = Math.Max(height, c.ActualHeight + Padding.Top + Padding.Bottom);
-        //        }
-        //        else
-        //        {
-        //            width = Math.Max(width, c.ActualWidth + Padding.Left + Padding.Right);
-        //            height += c.ActualHeight + Padding.Top + Padding.Bottom;
-        //        }
-        //    }
-        //    if(width > 0 && height > 0)
-        //    {
-        //        layoutWidth = width;
-        //        layoutHeight = height;
-        //    }
-        //}
-
-        protected override void UpdateBounds(int layoutWidth, int layoutHeight, ref int width, ref int height)
+        public override Size MeasureOverride(Size availableSize)
         {
-            if (IsHorizontalLayout)
+            var size = new Size(0, 0);
+            var offset = 0;
+            foreach (var c in Children)
             {
-                width += layoutWidth;
-                height = Math.Max(height, layoutHeight);
+                c.Measure(availableSize);
+                if (IsHorizontalLayout)
+                {
+                    //TODO: Wrap layout here.
+                    availableSize = new Size(availableSize.Width - c.DesiredSize.Width, availableSize.Height);
+                    size = new Size(size.Width + c.DesiredSize.Width, Math.Max(c.DesiredSize.Height, size.Height));
+                }
+                else
+                {
+                    //TODO: Wrap layout here.
+                    availableSize = new Size(availableSize.Width, availableSize.Height - c.DesiredSize.Height);
+                    size = new Size(Math.Max(size.Width, c.DesiredSize.Width), size.Height + c.DesiredSize.Height);
+                }
             }
-            else
-            {
-                width = Math.Max(width, layoutWidth);
-                height += layoutHeight;
-            }
+            return size;
         }
 
-        protected override void PostRender(AbstractConsoleComponent component, ref int left, ref int top)
+        public override Size ArrangeOverride(Size availableSizeWithoutMargin)
         {
-            if (IsHorizontalLayout)
+            var size = new Size(0, 0);
+            var top = RenderLocation.Y + Padding.Top;
+            var left = RenderLocation.X + Padding.Left;
+            var availableHeight = availableSizeWithoutMargin.Height - Padding.TotalSize.Height;
+            var availableWidth = availableSizeWithoutMargin.Width - Padding.TotalSize.Width;
+            var height = Padding.TotalSize.Height;
+            var width = Padding.TotalSize.Width;
+            var offset = 0;
+            foreach (var c in Children)
             {
-                left += component.ActualWidth + Padding.Left + Padding.Right;
+                //TODO Alignment
+                if (IsHorizontalLayout)
+                {
+                    left += Math.Max(offset, c.Margin.Left);
+                    c.Arrange(new Rectangle(left, top, c.DesiredSize.Width, availableHeight));
+                    availableWidth = Math.Max(0, availableWidth - c.RenderSize.Width);
+                    width = Math.Min(availableSizeWithoutMargin.Width, width + c.RenderSize.Width);
+                    height = Math.Max(height, c.RenderSize.Height);
+                    left += c.RenderSize.Width;
+                    offset = c.Margin.Right;
+                }
+                else
+                {
+                    top += Math.Max(offset, c.Margin.Top);
+                    c.Arrange(new Rectangle(left, top, availableWidth, c.DesiredSize.Height));
+                    availableHeight = Math.Max(0, availableHeight - c.RenderSize.Height);
+                    width = Math.Max(width, c.RenderSize.Width);
+                    height = Math.Min(availableSizeWithoutMargin.Height, height + c.RenderSize.Height);
+                    top += c.RenderSize.Height;
+                    offset = c.Margin.Bottom;
+                }
             }
-            else
-            {
-                top += component.ActualHeight + Padding.Top + Padding.Bottom;
-            }
+            return new Size(width, height);
         }
     }
 }
