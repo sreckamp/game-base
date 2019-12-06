@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace GameBase.WPF
 {
@@ -29,11 +27,11 @@ namespace GameBase.WPF
                 var operators = new Stack<Operator>();
                 while (toParse.Length > 0)
                 {
-                    int idx = toParse.Length;
+                    var idx = toParse.Length;
                     Operator op = null;
                     foreach (var o in m_grammer.Operators)
                     {
-                        int tmp = toParse.IndexOf(o.Symbol);
+                        var tmp = toParse.IndexOf(o.Symbol);
                         if (tmp >= 0 && tmp < idx)
                         {
                             idx = tmp;
@@ -46,7 +44,7 @@ namespace GameBase.WPF
                         {
                             values.Push(m_grammer.GetConstantOrVariableProcess(toParse.Substring(0, idx)));
                         }
-                        parseOperator(op, operators, values);
+                        ParseOperator(op, operators, values);
                         toParse = toParse.Substring(idx + op.Symbol.Length);
                     }
                     else
@@ -57,7 +55,7 @@ namespace GameBase.WPF
                 }
                 while (operators.Count > 0)
                 {
-                    implementOperator(operators.Pop(), values);
+                    ImplementOperator(operators.Pop(), values);
                 }
                 if (values.Count > 1)
                 {
@@ -68,7 +66,7 @@ namespace GameBase.WPF
             return m_cache[formula];
         }
 
-        private void parseOperator(Operator op, Stack<Operator> operatorStack, Stack<IEquationProcessor> valueStack)
+        private void ParseOperator(Operator op, Stack<Operator> operatorStack, Stack<IEquationProcessor> valueStack)
         {
             if (op != null)
             {
@@ -76,7 +74,7 @@ namespace GameBase.WPF
                 {
                     while (operatorStack.Peek().OperatorType != OperatorType.GroupingOpen)
                     {
-                        implementOperator(operatorStack.Pop(), valueStack);
+                        ImplementOperator(operatorStack.Pop(), valueStack);
                     }
                     operatorStack.Pop();
                 }
@@ -86,7 +84,7 @@ namespace GameBase.WPF
                     {
                         while (operatorStack.Count > 0 && operatorStack.Peek().Precedence > op.Precedence)
                         {
-                            implementOperator(operatorStack.Pop(), valueStack);
+                            ImplementOperator(operatorStack.Pop(), valueStack);
                         }
                     }
                     operatorStack.Push(op);
@@ -94,11 +92,11 @@ namespace GameBase.WPF
             }
         }
 
-        private void implementOperator(Operator op, Stack<IEquationProcessor> valueStack)
+        private void ImplementOperator(Operator op, Stack<IEquationProcessor> valueStack)
         {
-            Type[] argTypes = new Type[op.ArgumentCount];
-            object[] args = new object[op.ArgumentCount];
-            for (int i = 0; i < args.Length; i++)
+            var argTypes = new Type[op.ArgumentCount];
+            var args = new object[op.ArgumentCount];
+            for (var i = 0; i < args.Length; i++)
             {
                 argTypes[i] = typeof(IEquationProcessor);
                 args[(args.Length - 1) - i] = valueStack.Pop();
@@ -268,12 +266,12 @@ namespace GameBase.WPF
 
             public string ToValueString(Dictionary<string, T> values)
             {
-                return string.Format("{0}{1}", m_symbol, m_value.ToValueString(values));
+                return $"{m_symbol}{m_value.ToValueString(values)}";
             }
 
             public override string ToString()
             {
-                return string.Format("{0}{1}", m_symbol, m_value);
+                return $"{m_symbol}{m_value}";
             }
         }
 
@@ -299,13 +297,12 @@ namespace GameBase.WPF
 
             public string ToValueString(Dictionary<string, T> values)
             {
-                return string.Format("({0}{1}{2})", m_left.ToValueString(values),
-                    m_symbol, m_right.ToValueString(values));
+                return $"({m_left.ToValueString(values)}{m_symbol}{m_right.ToValueString(values)})";
             }
 
             public override string ToString()
             {
-                return string.Format("({0}{1}{2})", m_left, m_symbol, m_right);
+                return $"({m_left}{m_symbol}{m_right})";
             }
         }
     }

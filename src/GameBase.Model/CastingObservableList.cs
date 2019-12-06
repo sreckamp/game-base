@@ -1,25 +1,21 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Collections.Specialized;
-using System.Collections;
-using GameBase.Model;
 
-namespace GameBoard.Model
+namespace GameBase.Model
 {
-    public class CastingObservableList<T, B> : IObservableList<T>
-        where T : B
+    public class CastingObservableList<T, TB> : IObservableList<T>
+        where T : TB
     {
-        private readonly IObservableList<B> m_list;
+        private readonly IObservableList<TB> m_list;
 
-        public CastingObservableList(IObservableList<B> list)
+        public CastingObservableList(IObservableList<TB> list)
         {
             m_list = list;
-            list.CollectionChanged += new NotifyCollectionChangedEventHandler(collectionChanged);
+            list.CollectionChanged += OnCollectionChanged;
         }
 
-        private void collectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             CollectionChanged?.Invoke(sender, e);
         }
@@ -49,14 +45,8 @@ namespace GameBoard.Model
 
         public T this[int index]
         {
-            get
-            {
-                return (m_list[index] is T t) ? t : default(T);
-            }
-            set
-            {
-                m_list[index] = value;
-            }
+            get => (m_list[index] is T t) ? t : default(T);
+            set => m_list[index] = value;
         }
 
         #endregion
@@ -80,21 +70,15 @@ namespace GameBoard.Model
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            for (int idx = 0; idx < Count; idx++)
+            for (var idx = 0; idx < Count; idx++)
             {
                 array[arrayIndex + idx] = this[idx];
             }
         }
 
-        public int Count
-        {
-            get { return m_list.Count; }
-        }
+        public int Count => m_list.Count;
 
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         public bool Remove(T item)
         {
@@ -123,21 +107,15 @@ namespace GameBoard.Model
 
         public class CastingEnumerator : IEnumerator<T>
         {
-            private readonly IEnumerator<B> m_baseEnum;
-            public CastingEnumerator(IEnumerator<B> baseEnum)
+            private readonly IEnumerator<TB> m_baseEnum;
+            public CastingEnumerator(IEnumerator<TB> baseEnum)
             {
                 m_baseEnum = baseEnum;
             }
 
             #region IEnumerator<T> Members
 
-            public T Current
-            {
-                get
-                {
-                    return (m_baseEnum.Current is T t) ? t : default(T);
-                }
-            }
+            public T Current => (m_baseEnum.Current is T t) ? t : default(T);
 
             #endregion
 
@@ -152,10 +130,7 @@ namespace GameBoard.Model
 
             #region IEnumerator Members
 
-            object IEnumerator.Current
-            {
-                get { return m_baseEnum.Current; }
-            }
+            object IEnumerator.Current => m_baseEnum.Current;
 
             public bool MoveNext()
             {

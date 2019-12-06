@@ -23,12 +23,12 @@ namespace GameBase.Model
             m_value = defaultVal;
             if(valueChangeOccuredHandler != null)
             {
-                m_valueChangeOccured += valueChangeOccuredHandler;
+                ValueChangeOccured += valueChangeOccuredHandler;
             }
         }
 
         public event EventHandler<ChangedValueArgs<T>> ValueChanged;
-        private event EventHandler m_valueChangeOccured;
+        private event EventHandler ValueChangeOccured;
         public T Value
         {
             get => m_value;
@@ -37,7 +37,7 @@ namespace GameBase.Model
                 var old = m_value;
                 m_value = value;
                 ValueChanged?.Invoke(this, new ChangedValueArgs<T>(old, value));
-                m_valueChangeOccured?.Invoke(this, new EventArgs());
+                ValueChangeOccured?.Invoke(this, new EventArgs());
             }
         }
 

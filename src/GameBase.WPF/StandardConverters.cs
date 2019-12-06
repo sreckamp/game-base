@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Windows.Markup;
 using System.Windows.Data;
-using System.Windows.Media;
 using System.Windows;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
 using System.Collections;
-using System.Globalization;
 
 namespace GameBase.WPF
 {
@@ -70,7 +65,7 @@ namespace GameBase.WPF
             sb.Append('[');
             if (value is IEnumerable enumerable)
             {
-                bool comma = false;
+                var comma = false;
                 foreach (var val in enumerable)
                 {
                     if (comma) sb.Append(',');
@@ -123,7 +118,7 @@ namespace GameBase.WPF
 
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            bool result = false;
+            var result = false;
             if ((values[0] is bool bv && bv)
                 || (values[0] != null && values[0] != DependencyProperty.UnsetValue))
             {
@@ -165,8 +160,8 @@ namespace GameBase.WPF
 
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            bool foundNull = false;
-            for (int i = 0; i < values.Length;i++ )
+            var foundNull = false;
+            for (var i = 0; i < values.Length;i++ )
             {
                 if (values[i] != DependencyProperty.UnsetValue)
                 {
@@ -206,25 +201,25 @@ namespace GameBase.WPF
     /// </summary>
     public class BooleanFormulaConverter : AbstractFormulaConverter<bool>
     {
-        private static readonly BooleanStringFormulaParser s_parser = new BooleanStringFormulaParser();
+        private static readonly BooleanStringFormulaParser SParser = new BooleanStringFormulaParser();
 
-        public BooleanFormulaConverter() : base(s_parser) { }
+        public BooleanFormulaConverter() : base(SParser) { }
 
         #region IValueConverter Members
 
         public override object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             parameter = parameter ?? "A:A";
-            SplitParameter(parameter.ToString(), out string[] names, out string formula);
+            SplitParameter(parameter.ToString(), out var names, out var formula);
 
-            int idx = formula.IndexOf("?");
+            var idx = formula.IndexOf("?");
             string trueName = null;
             object trueValue = null;
             string falseName = null;
             object falseValue = null;
             if (idx >= 0)
             {
-                string[] results = formula.Substring(idx + 1).Split(':');
+                var results = formula.Substring(idx + 1).Split(':');
                 if (results.Length != 2
                     || string.Empty.Equals(results[0]) || string.Empty.Equals(results[1]))
                 {
@@ -276,7 +271,7 @@ namespace GameBase.WPF
                 }
             }
             var result = Calculate(formula, data);
-            object retVal = result ? trueValue : falseValue;
+            var retVal = result ? trueValue : falseValue;
             return retVal;
         }
 
@@ -284,7 +279,7 @@ namespace GameBase.WPF
 
         protected override bool ObjectToTypedValue(object value)
         {
-            bool val = false;
+            var val = false;
             if (value is Double)
             {
                 val = !((Double)value).Equals(0);
@@ -307,9 +302,9 @@ namespace GameBase.WPF
 
     public class DoubleFormulaConverter : AbstractFormulaConverter<double>
     {
-        private static readonly MathStringFormulaParser<double> s_parser = new MathStringFormulaParser<double>();
+        private static readonly MathStringFormulaParser<double> SParser = new MathStringFormulaParser<double>();
 
-        public DoubleFormulaConverter() : base(s_parser) { }
+        public DoubleFormulaConverter() : base(SParser) { }
 
         protected override double ObjectToTypedValue(object value)
         {
@@ -328,9 +323,9 @@ namespace GameBase.WPF
 
     public class IntegerFormulaConverter : AbstractFormulaConverter<int>
     {
-        private static readonly MathStringFormulaParser<int> s_parser = new MathStringFormulaParser<int>();
+        private static readonly MathStringFormulaParser<int> SParser = new MathStringFormulaParser<int>();
 
-        public IntegerFormulaConverter() : base(s_parser) { }
+        public IntegerFormulaConverter() : base(SParser) { }
 
         //public override object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         //{
@@ -346,7 +341,7 @@ namespace GameBase.WPF
 
         protected override int ObjectToTypedValue(object value)
         {
-            int val = 0;
+            var val = 0;
             if (value is double)
             {
                 val = (int)Math.Round((double)value,0);
@@ -406,7 +401,7 @@ namespace GameBase.WPF
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            bool result = value?.Equals(parameter) ?? parameter == null;
+            var result = value?.Equals(parameter) ?? parameter == null;
             if (targetType == typeof(Visibility))
             {
                 return result ? Visibility.Visible : Visibility.Hidden;
@@ -448,7 +443,7 @@ namespace GameBase.WPF
         public virtual object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             if (parameter == null) parameter = "A:A";
-            SplitParameter(parameter.ToString(), out string[] names, out string formula);
+            SplitParameter(parameter.ToString(), out var names, out var formula);
             var data = PrepareValues(names, values);
             return Calculate(formula, data);
         }
@@ -462,13 +457,13 @@ namespace GameBase.WPF
 
         protected void SplitParameter(string parameter, out string[] names, out string formula)
         {
-            string temp = parameter.ToUpper().Replace(" ", "");
+            var temp = parameter.ToUpper().Replace(" ", "");
 
             if (!temp.Contains(":"))
             {
                 throw new ArgumentException("Expected format is variableList=>formula.");
             }
-            int idx = temp.IndexOf(":");
+            var idx = temp.IndexOf(":");
             formula = temp.Substring(idx + ":".Length);
             names = temp.Substring(0, idx).Split(',');
             if (names.Length == 1 && string.Empty.Equals(names[0]))
@@ -486,11 +481,10 @@ namespace GameBase.WPF
         {
             if (names.Length > values.Length)
             {
-                throw new ArgumentException(string.Format("Expected {0} arguments, received {1}.",
-                    names.Length, values.Length));
+                throw new ArgumentException($"Expected {names.Length} arguments, received {values.Length}.");
             }
             var data = new Dictionary<string, T>();
-            for (int i = 0; i < names.Length; i++)
+            for (var i = 0; i < names.Length; i++)
             {
                 if (string.Empty.Equals(names[i]))
                 {

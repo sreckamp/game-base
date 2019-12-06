@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace GameBase.WPF
 {
     public class BooleanStringFormulaParser : AbstractStringFormulaParser<bool>
     {
-        public BooleanStringFormulaParser() : base(s_grammer) { }
+        public BooleanStringFormulaParser() : base(SGrammer) { }
 
-        private static readonly BooleanGrammer s_grammer = new BooleanGrammer();
+        private static readonly BooleanGrammer SGrammer = new BooleanGrammer();
 
         private class BooleanGrammer : AbstractGrammer
         {

@@ -1,47 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Diagnostics;
 using GameBase.Model.Rules;
 using System.Drawing;
 
 namespace GameBase.Model
 {
-    public class GameBoard<P, M> : IGameBoard<P, M> where P:Piece where M:Move
+    public class GameBoard<TP, TM> : IGameBoard<TP, TM> where TP:Piece where TM:Move
     {
-        private readonly IPlaceRule<P,M> m_placeRule;
+        private readonly IPlaceRule<TP,TM> m_placeRule;
         private readonly Point m_minCorner;
         private readonly Point m_maxCorner;
-        public GameBoard(IPlaceRule<P, M> placeRule):this(placeRule, 
+        public GameBoard(IPlaceRule<TP, TM> placeRule):this(placeRule, 
             new Point(int.MinValue, int.MinValue),
             new Point(int.MaxValue, int.MaxValue)) { }
 
-        public GameBoard(IPlaceRule<P, M> placeRule, int width, int height):
+        public GameBoard(IPlaceRule<TP, TM> placeRule, int width, int height):
             this(placeRule,
             new Point(0, 0),
             new Point(width -1, height-1))
         { }
 
-        public GameBoard(IPlaceRule<P, M> placeRule, Point minCorner, Point maxCorner)
+        public GameBoard(IPlaceRule<TP, TM> placeRule, Point minCorner, Point maxCorner)
         {
             m_placeRule = placeRule;
             m_minCorner = minCorner;
             m_maxCorner = maxCorner;
             AvailableLocations = new ObservableList<Point>();
-            Placements = new ObservableList<Placement<P, M>>();
+            Placements = new ObservableList<Placement<TP, TM>>();
         }
 
         public ObservableList<Point> AvailableLocations { get; private set; }
-        public ObservableList<Placement<P,M>> Placements { get; private set; }
+        public ObservableList<Placement<TP,TM>> Placements { get; private set; }
 
-        public List<M> GetAvailableMoves(P piece)
+        public List<TM> GetAvailableMoves(TP piece)
         {
-            var moves = new List<M>();
+            var moves = new List<TM>();
             if (piece != null)
             {
                 foreach (var l in AvailableLocations)
                 {
-                    List<M> potentialMoves = GetOptions(l);
+                    var potentialMoves = GetOptions(l);
                     foreach (var m in potentialMoves)
                     {
                         if (m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m))
@@ -54,16 +52,16 @@ namespace GameBase.Model
             return moves;
         }
 
-        protected virtual List<M> GetOptions(Point point)
+        protected virtual List<TM> GetOptions(Point point)
         {
-            return new List<M>();
+            return new List<TM>();
         }
 
         public event EventHandler<ChangedValueArgs<int>> MinXChanged;
         private int m_minX = 0;
         public int MinX
         {
-            get { return m_minX; }
+            get => m_minX;
             set
             {
                 var old = m_minX;
@@ -76,7 +74,7 @@ namespace GameBase.Model
         private int m_maxX = 0;
         public int MaxX
         {
-            get { return m_maxX; }
+            get => m_maxX;
             set
             {
                 var old = m_maxX;
@@ -89,7 +87,7 @@ namespace GameBase.Model
         private int m_minY = 0;
         public int MinY
         {
-            get { return m_minY; }
+            get => m_minY;
             set
             {
                 var old = m_minY;
@@ -102,7 +100,7 @@ namespace GameBase.Model
         private int m_maxY = 0;
         public int MaxY
         {
-            get { return m_maxY; }
+            get => m_maxY;
             set
             {
                 var old = m_maxY;
@@ -111,9 +109,9 @@ namespace GameBase.Model
             }
         }
 
-        protected P this[int col, int row] => this[new Point(col, row)];
+        protected TP this[int col, int row] => this[new Point(col, row)];
  
-        public P this[Point pnt]
+        public TP this[Point pnt]
         {
             get
             {
@@ -141,17 +139,17 @@ namespace GameBase.Model
         /// Add available locations based on the given placement
         /// </summary>
         /// <param name="placement">The newly added placement</param>
-        protected virtual void AddAvailableLocations(Placement<P, M> placement)
+        protected virtual void AddAvailableLocations(Placement<TP, TM> placement)
         {
 
         }
 
-        public bool Add(Placement<P, M> placement)
+        public bool Add(Placement<TP, TM> placement)
         {
             return Add(placement, true);
         }
 
-        protected bool Add(Placement<P,M> placement, bool mustBeAvailable)
+        protected bool Add(Placement<TP,TM> placement, bool mustBeAvailable)
         {
             if ((placement.Move.Location.X < m_minCorner.X)
                 || (placement.Move.Location.Y < m_minCorner.Y)
@@ -175,10 +173,10 @@ namespace GameBase.Model
             var col = placement.Move.Location.X;
             var row = placement.Move.Location.Y;
             AddAvailableLocations(placement);
-            int i = 0;
+            var i = 0;
             for (; i < Placements.Count; i++)
             {
-                int comp = placement.CompareTo(Placements[i]);
+                var comp = placement.CompareTo(Placements[i]);
                 if (comp == 0)
                 {
                     Placements.RemoveAt(i);
@@ -214,7 +212,8 @@ namespace GameBase.Model
             return true;
         }
 
-        public bool IsEmpty { get { return Placements.Count == 0; } }
+        public bool IsEmpty => Placements.Count == 0;
+
         public virtual void Clear()
         {
             MaxX = MinX = MaxY = MinY = 0;

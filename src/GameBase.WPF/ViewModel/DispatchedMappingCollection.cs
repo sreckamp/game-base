@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.Collections.Specialized;
-using System.Collections;
-using System.Windows;
 using GameBase.Model;
-using System.Threading;
 
-namespace GameBoard.Model
+namespace GameBase.WPF.ViewModel
 {
     /// <summary>
     /// Make a collection that mirrors a base collection.  The target class
@@ -17,50 +10,49 @@ namespace GameBoard.Model
     /// </summary>
     /// <typeparam name="T">The target Type, needs to have a constructor that takes
     /// the base as an argument</typeparam>
-    /// <typeparam name="B">The base type that the source collection is based on.</typeparam>
-    public class DispatchedMappingCollection<T, B> : MappingCollection<T, B>
+    /// <typeparam name="TB">The base type that the source collection is based on.</typeparam>
+    public class DispatchedMappingCollection<T, TB> : MappingCollection<T, TB>
     {
-        public DispatchedMappingCollection(IObservableList<B> models, params object[] constructorParams)
+        public DispatchedMappingCollection(IObservableList<TB> models, params object[] constructorParams)
             :base(models, constructorParams)
         {
         }
 
-        protected override void Add(B m)
+        protected override void Add(TB b)
         {
-            if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+            if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
-                base.Add(m);
+                base.Add(b);
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<B>((_m) => { Add(_m); }), m);
+                System.Windows.Application.Current.Dispatcher.Invoke(new Action<TB>(Add), b);
             }
         }
 
-        protected override void Remove(B m, int idx)
+        protected override void Remove(TB b, int idx)
         {
-            if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+            if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
-                base.Remove(m, idx);
+                base.Remove(b, idx);
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<B, int>((_m, _i) => { Remove(_m, _i); }), m, idx);
+                System.Windows.Application.Current.Dispatcher.Invoke(new Action<TB, int>(Remove), b, idx);
             }
         }
 
         #region INotifyCollectionChanged Members
 
-        protected override void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default(T), int idx = -1)
+        protected override void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default, int idx = -1)
         {
-            if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+            if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
                 base.NotifyCollectionChanged(action, vm, idx);
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<NotifyCollectionChangedAction, T, int>((_a, _vm, _idx) =>
-                { NotifyCollectionChanged(_a, _vm, _idx); }), action, vm, idx);
+                System.Windows.Application.Current.Dispatcher.Invoke(new Action<NotifyCollectionChangedAction, T, int>(NotifyCollectionChanged), action, vm, idx);
             }
         }
 

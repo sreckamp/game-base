@@ -1,35 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Globalization;
-using System.Linq.Expressions;
-using System.Diagnostics;
 
 namespace GameBase.WPF
 {
     public class MathStringFormulaParser<T> : AbstractStringFormulaParser<T>
     {
-        public MathStringFormulaParser() : base(s_grammer)
+        public MathStringFormulaParser() : base(SGrammer)
         {
         }
 
-        private static readonly MathGrammer s_grammer = new MathGrammer();
-        private static Dictionary<Type, IOperators> s_operators = new Dictionary<Type,IOperators>();
+        private static readonly MathGrammer SGrammer = new MathGrammer();
+        private static Dictionary<Type, IOperators> _sOperators = new Dictionary<Type,IOperators>();
 
         static MathStringFormulaParser()
         {
-            s_operators[typeof(SByte)] = s_operators[typeof(sbyte)] = new sbyteOperators();
-            s_operators[typeof(Byte)] = s_operators[typeof(byte)] = new byteOperators();
-            s_operators[typeof(Int16)] = s_operators[typeof(short)] = new shortOperators();
-            s_operators[typeof(UInt16)] = s_operators[typeof(ushort)] = new ushortOperators();
-            s_operators[typeof(Int32)] = s_operators[typeof(int)] = new intOperators();
-            s_operators[typeof(UInt32)] = s_operators[typeof(uint)] = new uintOperators();
-            s_operators[typeof(Int64)] = s_operators[typeof(long)] = new longOperators();
-            s_operators[typeof(UInt64)] = s_operators[typeof(ulong)] = new ulongOperators();
-            s_operators[typeof(float)] = new floatOperators();
-            s_operators[typeof(Double)] = s_operators[typeof(double)] = new doubleOperators();
-            s_operators[typeof(Decimal)] = s_operators[typeof(decimal)] = new decimalOperators();
+            _sOperators[typeof(SByte)] = _sOperators[typeof(sbyte)] = new SbyteOperators();
+            _sOperators[typeof(Byte)] = _sOperators[typeof(byte)] = new ByteOperators();
+            _sOperators[typeof(Int16)] = _sOperators[typeof(short)] = new ShortOperators();
+            _sOperators[typeof(UInt16)] = _sOperators[typeof(ushort)] = new UshortOperators();
+            _sOperators[typeof(Int32)] = _sOperators[typeof(int)] = new IntOperators();
+            _sOperators[typeof(UInt32)] = _sOperators[typeof(uint)] = new UintOperators();
+            _sOperators[typeof(Int64)] = _sOperators[typeof(long)] = new LongOperators();
+            _sOperators[typeof(UInt64)] = _sOperators[typeof(ulong)] = new UlongOperators();
+            _sOperators[typeof(float)] = new FloatOperators();
+            _sOperators[typeof(Double)] = _sOperators[typeof(double)] = new DoubleOperators();
+            _sOperators[typeof(Decimal)] = _sOperators[typeof(decimal)] = new DecimalOperators();
         }
 
         private class MathGrammer : AbstractGrammer
@@ -50,7 +46,7 @@ namespace GameBase.WPF
 
             protected override ConstantProcess GetConstantProcess(string token)
             {
-                IOperators<T> ops = (IOperators<T>)s_operators[typeof(T)];
+                var ops = (IOperators<T>)_sOperators[typeof(T)];
                 if(ops.IsParsable(token))
                 {
                     return new ConstantProcess(ops.Parse(token));
@@ -67,7 +63,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                IOperators<T> ops = (IOperators<T>)s_operators[typeof(T)];
+                var ops = (IOperators<T>)_sOperators[typeof(T)];
                 return ops.Add(left,right);
             }
 
@@ -81,7 +77,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                IOperators<T> ops = (IOperators<T>)s_operators[typeof(T)];
+                var ops = (IOperators<T>)_sOperators[typeof(T)];
                 return ops.Subtract(left, right);
             }
         }
@@ -94,7 +90,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                IOperators<T> ops = (IOperators<T>)s_operators[typeof(T)];
+                var ops = (IOperators<T>)_sOperators[typeof(T)];
                 return ops.Multiply(left, right);
             }
         }
@@ -107,7 +103,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                IOperators<T> ops = (IOperators<T>)s_operators[typeof(T)];
+                var ops = (IOperators<T>)_sOperators[typeof(T)];
                 return ops.Divide(left, right);
             }
         }
@@ -120,26 +116,26 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                IOperators<T> ops = (IOperators<T>)s_operators[typeof(T)];
+                var ops = (IOperators<T>)_sOperators[typeof(T)];
                 return ops.Modulo(left, right);
             }
         }
 
         private interface IOperators { }
-        private interface IOperators<K> : IOperators
+        private interface IOperators<TK> : IOperators
         {
-            K Add(K var1, K var2);
-            K Subtract(K var1, K var2);
-            K Multiply(K var1, K var2);
-            K Divide(K var1, K var2);
-            K Modulo(K var1, K var2);
-            K Negate(K var);
+            TK Add(TK var1, TK var2);
+            TK Subtract(TK var1, TK var2);
+            TK Multiply(TK var1, TK var2);
+            TK Divide(TK var1, TK var2);
+            TK Modulo(TK var1, TK var2);
+            TK Negate(TK var);
             bool IsParsable(string token);
-            K Parse(string token);
+            TK Parse(string token);
         }
 
 #pragma warning disable IDE1006
-        private class sbyteOperators : IOperators<sbyte>
+        private class SbyteOperators : IOperators<sbyte>
 #pragma warning restore IDE1006
         {
             public sbyte Add(sbyte var1, sbyte var2) { return (sbyte)(var1 + var2); }
@@ -157,7 +153,7 @@ namespace GameBase.WPF
                     token = token.Substring(2);
                     style = NumberStyles.HexNumber;
                 }
-                return sbyte.TryParse(token, style, null, out sbyte val);
+                return sbyte.TryParse(token, style, null, out var val);
             }
             public sbyte Parse(string token)
             {
@@ -173,7 +169,7 @@ namespace GameBase.WPF
         }
 
 #pragma warning disable IDE1006
-        private class byteOperators : IOperators<byte>
+        private class ByteOperators : IOperators<byte>
 #pragma warning restore IDE1006
         {
             public byte Add(byte var1, byte var2) { return (byte)(var1 + var2); }
@@ -191,7 +187,7 @@ namespace GameBase.WPF
                     token = token.Substring(2);
                     style = NumberStyles.HexNumber;
                 }
-                return byte.TryParse(token, style, null, out byte val);
+                return byte.TryParse(token, style, null, out var val);
             }
             public byte Parse(string token)
             {
@@ -207,7 +203,7 @@ namespace GameBase.WPF
         }
 
 #pragma warning disable IDE1006
-        private class shortOperators : IOperators<short>
+        private class ShortOperators : IOperators<short>
 #pragma warning restore IDE1006
         {
             public short Add(short var1, short var2) { return (short)(var1 + var2); }
@@ -225,7 +221,7 @@ namespace GameBase.WPF
                     token = token.Substring(2);
                     style = NumberStyles.HexNumber;
                 }
-                return short.TryParse(token, style, null, out short val);
+                return short.TryParse(token, style, null, out var val);
             }
             public short Parse(string token)
             {
@@ -241,7 +237,7 @@ namespace GameBase.WPF
         }
 
 #pragma warning disable IDE1006
-        private class ushortOperators : IOperators<ushort>
+        private class UshortOperators : IOperators<ushort>
 #pragma warning restore IDE1006
         {
             public ushort Add(ushort var1, ushort var2) { return (ushort)(var1 + var2); }
@@ -259,7 +255,7 @@ namespace GameBase.WPF
                     token = token.Substring(2);
                     style = NumberStyles.HexNumber;
                 }
-                return ushort.TryParse(token, style, null, out ushort val);
+                return ushort.TryParse(token, style, null, out var val);
             }
             public ushort Parse(string token)
             {
@@ -275,7 +271,7 @@ namespace GameBase.WPF
         }
 
 #pragma warning disable IDE1006
-        private class intOperators : IOperators<int>
+        private class IntOperators : IOperators<int>
 #pragma warning restore IDE1006
         {
             public int Add(int var1, int var2) { return var1 + var2; }
@@ -293,7 +289,7 @@ namespace GameBase.WPF
                     token = token.Substring(2);
                     style = NumberStyles.HexNumber;
                 }
-                return int.TryParse(token, style, null, out int val);
+                return int.TryParse(token, style, null, out var val);
             }
             public int Parse(string token)
             {
@@ -309,7 +305,7 @@ namespace GameBase.WPF
         }
 
 #pragma warning disable IDE1006
-        private class uintOperators : IOperators<uint>
+        private class UintOperators : IOperators<uint>
 #pragma warning restore IDE1006
         {
             public uint Add(uint var1, uint var2) { return var1 + var2; }
@@ -327,7 +323,7 @@ namespace GameBase.WPF
                     token = token.Substring(2);
                     style = NumberStyles.HexNumber;
                 }
-                return uint.TryParse(token, style, null, out uint val);
+                return uint.TryParse(token, style, null, out var val);
             }
             public uint Parse(string token)
             {
@@ -343,7 +339,7 @@ namespace GameBase.WPF
         }
 
 #pragma warning disable IDE1006
-        private class longOperators : IOperators<long>
+        private class LongOperators : IOperators<long>
 #pragma warning restore IDE1006
         {
             public long Add(long var1, long var2) { return var1 + var2; }
@@ -361,7 +357,7 @@ namespace GameBase.WPF
                     token = token.Substring(2);
                     style = NumberStyles.HexNumber;
                 }
-                return long.TryParse(token, style, null, out long val);
+                return long.TryParse(token, style, null, out var val);
             }
             public long Parse(string token)
             {
@@ -377,7 +373,7 @@ namespace GameBase.WPF
         }
 
 #pragma warning disable IDE1006
-        private class ulongOperators : IOperators<ulong>
+        private class UlongOperators : IOperators<ulong>
 #pragma warning restore IDE1006
         {
             public ulong Add(ulong var1, ulong var2) { return var1 + var2; }
@@ -395,7 +391,7 @@ namespace GameBase.WPF
                     token = token.Substring(2);
                     style = NumberStyles.HexNumber;
                 }
-                return ulong.TryParse(token, style, null, out ulong val);
+                return ulong.TryParse(token, style, null, out var val);
             }
             public ulong Parse(string token)
             {
@@ -411,7 +407,7 @@ namespace GameBase.WPF
         }
 
 #pragma warning disable IDE1006
-        private class floatOperators : IOperators<float>
+        private class FloatOperators : IOperators<float>
 #pragma warning restore IDE1006
         {
             public float Add(float var1, float var2) { return var1 + var2; }
@@ -420,12 +416,12 @@ namespace GameBase.WPF
             public float Divide(float var1, float var2) { return var1 / var2; }
             public float Modulo(float var1, float var2) { return var1 % var2; }
             public float Negate(float var) { return -var; }
-            public bool IsParsable(string token) { return float.TryParse(token, out float val); }
+            public bool IsParsable(string token) { return float.TryParse(token, out var val); }
             public float Parse(string token) { return float.Parse(token); }
         }
 
 #pragma warning disable IDE1006
-        private class doubleOperators : IOperators<double>
+        private class DoubleOperators : IOperators<double>
 #pragma warning restore IDE1006
         {
             public double Add(double var1, double var2) { return var1 + var2; }
@@ -434,12 +430,12 @@ namespace GameBase.WPF
             public double Divide(double var1, double var2) { return var1 / var2; }
             public double Modulo(double var1, double var2) { return var1 % var2; }
             public double Negate(double var) { return -var; }
-            public bool IsParsable(string token) { return double.TryParse(token, out double val); }
+            public bool IsParsable(string token) { return double.TryParse(token, out var val); }
             public double Parse(string token) { return double.Parse(token); }
         }
 
 #pragma warning disable IDE1006
-        private class decimalOperators : IOperators<decimal>
+        private class DecimalOperators : IOperators<decimal>
 #pragma warning restore IDE1006
         {
             public decimal Add(decimal var1, decimal var2) { return var1 + var2; }
@@ -448,7 +444,7 @@ namespace GameBase.WPF
             public decimal Divide(decimal var1, decimal var2) { return var1 / var2; }
             public decimal Modulo(decimal var1, decimal var2) { return var1 % var2; }
             public decimal Negate(decimal var) { return -var; }
-            public bool IsParsable(string token) { return decimal.TryParse(token, out decimal val); }
+            public bool IsParsable(string token) { return decimal.TryParse(token, out var val); }
             public decimal Parse(string token) { return decimal.Parse(token); }
         }
     }

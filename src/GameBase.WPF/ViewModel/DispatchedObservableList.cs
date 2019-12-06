@@ -1,25 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections.Specialized;
-using System.Windows.Threading;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using GameBase.Model;
 
-namespace GameBoard.WPF.ViewModel
+namespace GameBase.WPF.ViewModel
 {
-    public class DispatchedObservableList<T> : INotifyCollectionChanged, IEnumerable<T>, IList<T>
+    public class DispatchedObservableList<T> : INotifyCollectionChanged, IList<T>
     {
         private readonly IObservableList<T> m_list;
 
         public DispatchedObservableList(IObservableList<T> list) 
         {
             m_list = list;
-            list.CollectionChanged += new NotifyCollectionChangedEventHandler(collectionChanged);
+            list.CollectionChanged += OnCollectionChanged;
         }
 
-        private void collectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
@@ -27,8 +24,7 @@ namespace GameBoard.WPF.ViewModel
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>((o, ea) =>
-                        { collectionChanged(o, ea); }), sender, e);
+                System.Windows.Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>(OnCollectionChanged), sender, e);
             }
         }
 
@@ -57,14 +53,8 @@ namespace GameBoard.WPF.ViewModel
 
         public T this[int index]
         {
-            get
-            {
-                return m_list[index];
-            }
-            set
-            {
-                m_list[index] = value;
-            }
+            get => m_list[index];
+            set => m_list[index] = value;
         }
 
         #endregion
@@ -91,15 +81,9 @@ namespace GameBoard.WPF.ViewModel
             m_list.CopyTo(array, arrayIndex);
         }
 
-        public int Count
-        {
-            get { return m_list.Count; }
-        }
+        public int Count => m_list.Count;
 
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         public bool Remove(T item)
         {

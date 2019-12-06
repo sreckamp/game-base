@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows;
 using DPoint = System.Drawing.Point;
-using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -27,8 +22,8 @@ namespace GameBase.WPF
 
         public event RoutedEventHandler OverCell
         {
-            add { AddHandler(OverCellEvent, value); }
-            remove { RemoveHandler(OverCellEvent, value); }
+            add => AddHandler(OverCellEvent, value);
+            remove => RemoveHandler(OverCellEvent, value);
         }
 
         public GameGrid()

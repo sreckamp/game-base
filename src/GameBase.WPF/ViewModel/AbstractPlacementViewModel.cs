@@ -1,61 +1,52 @@
 ﻿using GameBase.Model;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using DPoint = System.Drawing.Point;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Diagnostics;
 
 namespace GameBase.WPF.ViewModel
 {
-    public abstract class AbstractPlacementViewModel<P,M> : INotifyPropertyChanged where P:Piece where M:Move
+    public abstract class AbstractPlacementViewModel<TP,TM> : INotifyPropertyChanged where TP:Piece where TM:Move
     {
-        protected readonly Placement<P, M> m_placement;
-        protected readonly IGridManager m_GridManager;
-        protected AbstractPlacementViewModel(Placement<P,M> placement, IGridManager gridManager = null)
+        protected readonly Placement<TP, TM> Placement;
+        protected readonly IGridManager GridManager;
+        protected AbstractPlacementViewModel(Placement<TP,TM> placement, IGridManager gridManager = null)
         {
-            m_placement = placement;
-            m_GridManager = gridManager;
-            if(m_GridManager != null)
+            Placement = placement;
+            GridManager = gridManager;
+            if(GridManager != null)
             {
-                m_GridManager.StartColumnChanged += startColumnChanged;
-                m_GridManager.StartRowChanged += startRowChanged;
+                GridManager.StartColumnChanged += StartColumnChanged;
+                GridManager.StartRowChanged += StartRowChanged;
             }
         }
 
-        private M m_move = null;
-        public M Move
-        {
-            get => m_placement.Move ?? m_move;
-        }
+        private TM m_move = null;
+        public TM Move => Placement.Move ?? m_move;
 
-        protected abstract M GetMove(int locationX, int locationY);
+        protected abstract TM GetMove(int locationX, int locationY);
 
         public virtual void SetCell(DPoint cell)
         {
-            m_move = GetMove(cell.X + (m_GridManager?.StartColumn ?? 0), cell.Y + (m_GridManager?.StartRow ?? 0));
+            m_move = GetMove(cell.X + (GridManager?.StartColumn ?? 0), cell.Y + (GridManager?.StartRow ?? 0));
             NotifyPropertyChanged(nameof(Row));
             NotifyPropertyChanged(nameof(Column));
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
-        private void startRowChanged(object sender, ChangedValueArgs<int> e)
+        private void StartRowChanged(object sender, ChangedValueArgs<int> e)
         {
             NotifyPropertyChanged(nameof(Row));
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
 
-        private void startColumnChanged(object sender, ChangedValueArgs<int> e)
+        private void StartColumnChanged(object sender, ChangedValueArgs<int> e)
         {
             NotifyPropertyChanged(nameof(Column));
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
 
         public bool IsOnGrid => Move != null;
-        public int Column => Move != null ? (Move.Location.X - (m_GridManager?.StartColumn ?? 0)) : 0;
-        public int Row => Move != null ? (Move.Location.Y - (m_GridManager?.StartRow ?? 0)) : 0;
+        public int Column => Move != null ? (Move.Location.X - (GridManager?.StartColumn ?? 0)) : 0;
+        public int Row => Move != null ? (Move.Location.Y - (GridManager?.StartRow ?? 0)) : 0;
 
         #region INotifyPropertyChanged Members
 

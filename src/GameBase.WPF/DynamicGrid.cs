@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows;
-using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
 using DPoint = System.Drawing.Point;
@@ -25,15 +20,15 @@ namespace GameBase.WPF
 
         public event RoutedEventHandler OverCell
         {
-            add { AddHandler(OverCellEvent, value); }
-            remove { RemoveHandler(OverCellEvent, value); }
+            add => AddHandler(OverCellEvent, value);
+            remove => RemoveHandler(OverCellEvent, value);
         }
 
         private DPoint m_lastCell = new DPoint(-1, -1);
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
-            cellEntered(-1, -1);
+            CellEntered(-1, -1);
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -64,12 +59,12 @@ namespace GameBase.WPF
                 }
                 if (row < RowDefinitions.Count && column < ColumnDefinitions.Count)
                 {
-                    cellEntered(column, row);
+                    CellEntered(column, row);
                 }
             }
         }
 
-        private void cellEntered(int column, int row)
+        private void CellEntered(int column, int row)
         {
             var gc = new DPoint(column, row);
             if (gc != m_lastCell)
@@ -99,7 +94,7 @@ namespace GameBase.WPF
 
         public int Columns
         {
-            get { return (int)GetValue(ColumnsProperty); }
+            get => (int)GetValue(ColumnsProperty);
             set
             {
                 while (ColumnDefinitions.Count > value)
@@ -135,7 +130,7 @@ namespace GameBase.WPF
 
         public int ColumnWidth
         {
-            get { return (int)GetValue(ColumnWidthProperty); }
+            get => (int)GetValue(ColumnWidthProperty);
             set
             {
                 if (value < 0)
@@ -172,7 +167,7 @@ namespace GameBase.WPF
 
         public int Rows
         {
-            get { return (int)GetValue(RowsProperty); }
+            get => (int)GetValue(RowsProperty);
             set
             {
                 while (RowDefinitions.Count > value)
@@ -207,7 +202,7 @@ namespace GameBase.WPF
 
         public int RowHeight
         {
-            get { return (int)GetValue(RowHeightProperty); }
+            get => (int)GetValue(RowHeightProperty);
 
             set
             {

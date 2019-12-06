@@ -2,13 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GameBase.Model;
 
-namespace GameBase.Model
+namespace GameBase.WPF.ViewModel
 {
-    public class OverlayDispatchableObservableList<T> : INotifyCollectionChanged, IEnumerable<T>, IList<T>
+    public class OverlayDispatchableObservableList<T> : INotifyCollectionChanged, IList<T>
     {
         private readonly IObservableList<T>[] m_lists;
 
@@ -17,11 +15,11 @@ namespace GameBase.Model
             m_lists = lists;
             foreach(var list in lists)
             {
-                list.CollectionChanged += collectionChanged;
+                list.CollectionChanged += OnCollectionChanged;
             }
         }
 
-        private void collectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
@@ -29,8 +27,7 @@ namespace GameBase.Model
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>((o, ea) =>
-                { collectionChanged(o, ea); }), sender, e);
+                System.Windows.Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>( OnCollectionChanged), sender, e);
             }
         }
 
@@ -44,7 +41,7 @@ namespace GameBase.Model
 
         public int IndexOf(T item)
         {
-            int idx = 0;
+            var idx = 0;
             foreach(var l in m_lists)
             {
                 if(l.Contains(item))
@@ -73,7 +70,7 @@ namespace GameBase.Model
         {
             get
             {
-                int idx = 0;
+                var idx = 0;
                 foreach (var l in m_lists)
                 {
                     if (index >= idx && index < idx + l.Count)
@@ -87,10 +84,7 @@ namespace GameBase.Model
                 }
                 throw new IndexOutOfRangeException();
             }
-            set
-            {
-                throw new NotSupportedException();
-            }
+            set => throw new NotSupportedException();
         }
 
         #endregion
@@ -121,7 +115,7 @@ namespace GameBase.Model
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            int idx = arrayIndex;
+            var idx = arrayIndex;
             foreach (var l in m_lists)
             {
                 l.CopyTo(array, idx);
@@ -132,7 +126,7 @@ namespace GameBase.Model
         public int Count
         {
             get {
-                int count = 0;
+                var count = 0;
                 foreach (var l in m_lists)
                 {
                     count += l.Count;
@@ -141,10 +135,7 @@ namespace GameBase.Model
             }
         }
 
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
+        public bool IsReadOnly => true;
 
         public bool Remove(T item)
         {
@@ -172,7 +163,7 @@ namespace GameBase.Model
 
         public class OverlayListEnumerator : IEnumerator<T>
         {
-            private List<IList<T>> m_lists = new List<IList<T>>();
+            private readonly List<IList<T>> m_lists = new List<IList<T>>();
             private IEnumerator<IEnumerator<T>> m_active = null;
 
             public OverlayListEnumerator(params IList<T>[] lists)
@@ -207,11 +198,11 @@ namespace GameBase.Model
             }
 
             #region IDisposable Support
-            private bool disposedValue = false; // To detect redundant calls
+            private bool m_disposedValue = false; // To detect redundant calls
 
             protected virtual void Dispose(bool disposing)
             {
-                if (!disposedValue)
+                if (!m_disposedValue)
                 {
                     if (disposing)
                     {
@@ -221,7 +212,7 @@ namespace GameBase.Model
                     // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                     // TODO: set large fields to null.
 
-                    disposedValue = true;
+                    m_disposedValue = true;
                 }
             }
 

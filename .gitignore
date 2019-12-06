@@ -1,7 +1,9 @@
 *.suo
 *.user
+*.DotSettings
 bin/
 obj/
 .klocwork/
 .vs/
 /build/
+.idea/

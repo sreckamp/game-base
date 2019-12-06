@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Diagnostics;
-using GameBase.Model.Rules;
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace GameBase.Model
 {
-    public interface IGameBoard<P,M> where P : Piece where M : Move
+    public interface IGameBoard<TP,TM> where TP : Piece where TM : Move
     {
-        P this[Point location] { get; }
+        TP this[Point location] { get; }
         bool IsEmpty { get; }
         ObservableList<Point> AvailableLocations { get; }
     }

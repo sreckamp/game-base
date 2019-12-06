@@ -1,35 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameBase.Model
 {
-    public class Placement<P, M> : IComparable, IComparable<Placement<P, M>> where P : Piece where M : Move
+    public class Placement<TP, TM> : IComparable, IComparable<Placement<TP, TM>> where TP : Piece where TM : Move
     {
-        public Placement(P piece, M move)
+        public Placement(TP piece, TM move)
         {
             Piece = piece;
             Move = move;
         }
 
-        public P Piece { get; private set; }
-        public M Move { get; private set; }
+        public TP Piece { get; private set; }
+        public TM Move { get; private set; }
 
         #region IComparable Members
 
         public int CompareTo(object obj)
         {
-            return CompareTo(obj as Placement<P, M>);
+            return CompareTo(obj as Placement<TP, TM>);
         }
 
         #endregion
 
         #region IComparable<Placement<P,M>> Members
 
-        public int CompareTo(Placement<P,M> other)
+        public int CompareTo(Placement<TP,TM> other)
         {
             if (other == null)
             {
@@ -58,14 +54,14 @@ namespace GameBase.Model
         }
 
         #endregion
-        public static implicit operator Point(Placement<P,M> p)
+        public static implicit operator Point(Placement<TP,TM> p)
         {
             return p?.Move?.Location ?? new Point();
         }
 
         public override string ToString()
         {
-            string val = Piece?.ToString() ?? "<<null>>";
+            var val = Piece?.ToString() ?? "<<null>>";
             if (val != null) val += "@";
             return val + Move.ToString();
         }

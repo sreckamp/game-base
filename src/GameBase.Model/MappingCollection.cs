@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.Collections.Specialized;
 using System.Collections;
-using System.Windows;
-using GameBase.Model;
-using System.Threading;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Reflection;
 
-namespace GameBoard.Model
+namespace GameBase.Model
 {
     /// <summary>
     /// Make a collection that mirrors a base collection.  The target class
@@ -18,27 +13,27 @@ namespace GameBoard.Model
     /// <typeparam name="T">The target Type, needs to have a constructor that takes
     /// the base as an argument</typeparam>
     /// <typeparam name="B">The base type that the source collection is based on.</typeparam>
-    public class MappingCollection<T, B> : IObservableList<T>
+    public class MappingCollection<T, TB> : IObservableList<T>
     {
         private readonly object m_modelsLock = new object();
-        private readonly IObservableList<B> m_models;
-        private readonly Dictionary<B, T> m_modelToViewModel = new Dictionary<B, T>();
-        private readonly Dictionary<T, B> m_viewModelToModel = new Dictionary<T, B>();
+        private readonly IObservableList<TB> m_models;
+        private readonly Dictionary<TB, T> m_modelToViewModel = new Dictionary<TB, T>();
+        private readonly Dictionary<T, TB> m_viewModelToModel = new Dictionary<T, TB>();
         private readonly ConstructorInfo m_constructor;
         private readonly object[] m_constructorParams;
-        public MappingCollection(IObservableList<B> models, params object[] constructorParams)
+        public MappingCollection(IObservableList<TB> models, params object[] constructorParams)
         {
             m_constructorParams = new object[constructorParams.Length + 1];
             var types = new Type[m_constructorParams.Length];
-            types[0] = typeof(B);
-            for (int i = 0; i < constructorParams.Length; i++)
+            types[0] = typeof(TB);
+            for (var i = 0; i < constructorParams.Length; i++)
             {
                 m_constructorParams[i + 1] = constructorParams[i];
                 types[i + 1] = constructorParams[i].GetType();
             }
             m_constructor = typeof(T).GetConstructor(types) ?? throw new ArgumentException(typeof(T).Name + " cannot find constructor.");
             m_models = models;
-            m_models.CollectionChanged += new NotifyCollectionChangedEventHandler(models_CollectionChanged);
+            m_models.CollectionChanged += models_CollectionChanged;
             foreach (var m in models)
             {
                 Add(m);
@@ -50,25 +45,25 @@ namespace GameBoard.Model
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    for (int i = 0; i < e.NewItems.Count; i++)
+                    for (var i = 0; i < e.NewItems.Count; i++)
                     {
-                        Add((B)e.NewItems[i]);
+                        Add((TB)e.NewItems[i]);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    for (int i = 0; i < e.OldItems.Count; i++)
+                    for (var i = 0; i < e.OldItems.Count; i++)
                     {
-                        Remove((B)e.OldItems[i], e.OldStartingIndex + i);
+                        Remove((TB)e.OldItems[i], e.OldStartingIndex + i);
                     }
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    for (int i = 0; i < e.OldItems.Count; i++)
+                    for (var i = 0; i < e.OldItems.Count; i++)
                     {
-                        Remove((B)e.OldItems[i], e.OldStartingIndex + i);
+                        Remove((TB)e.OldItems[i], e.OldStartingIndex + i);
                     }
-                    for (int i = 0; i < e.NewItems.Count; i++)
+                    for (var i = 0; i < e.NewItems.Count; i++)
                     {
-                        Add((B)e.NewItems[i]);
+                        Add((TB)e.NewItems[i]);
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
@@ -79,7 +74,7 @@ namespace GameBoard.Model
             }
         }
 
-        protected virtual void Add(B m)
+        protected virtual void Add(TB m)
         {
             if (!m_modelToViewModel.ContainsKey(m))
             {
@@ -91,7 +86,7 @@ namespace GameBoard.Model
             }
         }
 
-        protected virtual void Remove(B m, int idx)
+        protected virtual void Remove(TB m, int idx)
         {
             if (m_modelToViewModel.ContainsKey(m))
             {
@@ -102,11 +97,11 @@ namespace GameBoard.Model
             }
         }
 
-        public T this[B item]
+        public T this[TB item]
         {
             get
             {
-                T val = default(T);
+                var val = default(T);
                 if (item != null)
                 {
                     val = m_modelToViewModel[item];
@@ -132,7 +127,7 @@ namespace GameBoard.Model
         public IEnumerator<T> GetEnumerator()
         {
             var viewModels = new List<T>();
-            for(int idx = 0; idx < m_models.Count;idx++)
+            for(var idx = 0; idx < m_models.Count;idx++)
             {
                 var m = m_models[idx];
                 if(m_modelToViewModel.ContainsKey(m))
@@ -181,14 +176,8 @@ namespace GameBoard.Model
 
         public T this[int index]
         {
-            get
-            {
-                return m_modelToViewModel[m_models[index]];
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get => m_modelToViewModel[m_models[index]];
+            set => throw new NotImplementedException();
         }
 
         #endregion
@@ -212,21 +201,15 @@ namespace GameBoard.Model
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            for (int i = 0; i < m_models.Count; i++)
+            for (var i = 0; i < m_models.Count; i++)
             {
                 array[arrayIndex + i] = m_modelToViewModel[m_models[i]];
             }
         }
 
-        public int Count
-        {
-            get { return m_models.Count; }
-        }
+        public int Count => m_models.Count;
 
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
+        public bool IsReadOnly => true;
 
         public bool Remove(T item)
         {
