@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Diagnostics;
+using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -97,6 +98,7 @@ namespace GameBase.WPF
             get => (int)GetValue(ColumnsProperty);
             set
             {
+                Debug.WriteLine($"Columns:{ColumnDefinitions.Count}->{value}");
                 while (ColumnDefinitions.Count > value)
                 {
                     ColumnDefinitions.RemoveAt(0);
@@ -105,6 +107,7 @@ namespace GameBase.WPF
                 {
                     ColumnDefinitions.Add(new ColumnDefinition() { Width = m_columnWidth });
                 }
+                Debug.WriteLine($"After Count = {ColumnDefinitions.Count}");
                 SetValue(ColumnsProperty, value);
             }
         }
@@ -170,6 +173,7 @@ namespace GameBase.WPF
             get => (int)GetValue(RowsProperty);
             set
             {
+                Debug.WriteLine($"Rows:{RowDefinitions.Count}->{value}");
                 while (RowDefinitions.Count > value)
                 {
                     RowDefinitions.RemoveAt(0);
@@ -178,6 +182,7 @@ namespace GameBase.WPF
                 {
                     RowDefinitions.Add(new RowDefinition() { Height = m_rowHeight });
                 }
+                Debug.WriteLine($"After Count = {RowDefinitions.Count}");
                 SetValue(RowsProperty, value);
             }
         }

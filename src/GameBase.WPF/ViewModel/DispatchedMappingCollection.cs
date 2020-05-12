@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using GameBase.Model;
 
 namespace GameBase.WPF.ViewModel

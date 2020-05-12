@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using GameBase.Model.Rules;
 using System.Drawing;
+using System.Linq;
 
 namespace GameBase.Model
 {
@@ -10,7 +11,7 @@ namespace GameBase.Model
         private readonly IPlaceRule<TP,TM> m_placeRule;
         private readonly Point m_minCorner;
         private readonly Point m_maxCorner;
-        public GameBoard(IPlaceRule<TP, TM> placeRule):this(placeRule, 
+        public GameBoard(IPlaceRule<TP, TM> placeRule):this(placeRule,
             new Point(int.MinValue, int.MinValue),
             new Point(int.MaxValue, int.MaxValue)) { }
 
@@ -29,36 +30,28 @@ namespace GameBase.Model
             Placements = new ObservableList<Placement<TP, TM>>();
         }
 
-        public ObservableList<Point> AvailableLocations { get; private set; }
-        public ObservableList<Placement<TP,TM>> Placements { get; private set; }
+        public ObservableList<Point> AvailableLocations { get; }
+        public ObservableList<Placement<TP,TM>> Placements { get; }
 
         public List<TM> GetAvailableMoves(TP piece)
         {
             var moves = new List<TM>();
-            if (piece != null)
+            if (piece == null)
             {
-                foreach (var l in AvailableLocations)
-                {
-                    var potentialMoves = GetOptions(l);
-                    foreach (var m in potentialMoves)
-                    {
-                        if (m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m))
-                        {
-                            moves.Add(m);
-                        }
-                    }
-                }
+                return moves;
             }
+
+            moves.AddRange(from l in AvailableLocations from m in GetOptions(l) where m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m) select m);
             return moves;
         }
 
-        protected virtual List<TM> GetOptions(Point point)
+        protected virtual IEnumerable<TM> GetOptions(Point point)
         {
             return new List<TM>();
         }
 
         public event EventHandler<ChangedValueArgs<int>> MinXChanged;
-        private int m_minX = 0;
+        private int m_minX;
         public int MinX
         {
             get => m_minX;
@@ -71,7 +64,7 @@ namespace GameBase.Model
         }
 
         public event EventHandler<ChangedValueArgs<int>> MaxXChanged;
-        private int m_maxX = 0;
+        private int m_maxX;
         public int MaxX
         {
             get => m_maxX;
@@ -84,7 +77,7 @@ namespace GameBase.Model
         }
 
         public event EventHandler<ChangedValueArgs<int>> MinYChanged;
-        private int m_minY = 0;
+        private int m_minY;
         public int MinY
         {
             get => m_minY;
@@ -97,7 +90,7 @@ namespace GameBase.Model
         }
 
         public event EventHandler<ChangedValueArgs<int>> MaxYChanged;
-        private int m_maxY = 0;
+        private int m_maxY;
         public int MaxY
         {
             get => m_maxY;

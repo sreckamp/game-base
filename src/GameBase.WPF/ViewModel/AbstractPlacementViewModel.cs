@@ -20,7 +20,7 @@ namespace GameBase.WPF.ViewModel
             }
         }
 
-        private TM m_move = null;
+        private TM m_move;
         public TM Move => Placement.Move ?? m_move;
 
         protected abstract TM GetMove(int locationX, int locationY);
@@ -60,8 +60,7 @@ namespace GameBase.WPF.ViewModel
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<string>((n) =>
-                { NotifyPropertyChanged(n); }), name);
+                System.Windows.Application.Current.Dispatcher.Invoke(new Action<string>(NotifyPropertyChanged), name);
             }
         }
 

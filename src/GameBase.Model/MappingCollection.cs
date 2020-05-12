@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace GameBase.Model
@@ -12,7 +13,7 @@ namespace GameBase.Model
     /// </summary>
     /// <typeparam name="T">The target Type, needs to have a constructor that takes
     /// the base as an argument</typeparam>
-    /// <typeparam name="B">The base type that the source collection is based on.</typeparam>
+    /// <typeparam name="TB">The base type that the source collection is based on.</typeparam>
     public class MappingCollection<T, TB> : IObservableList<T>
     {
         private readonly object m_modelsLock = new object();
@@ -45,6 +46,7 @@ namespace GameBase.Model
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
+                    Debug.WriteLine($"Add:{e.NewStartingIndex}");
                     for (var i = 0; i < e.NewItems.Count; i++)
                     {
                         Add((TB)e.NewItems[i]);
@@ -61,6 +63,7 @@ namespace GameBase.Model
                     {
                         Remove((TB)e.OldItems[i], e.OldStartingIndex + i);
                     }
+                    Debug.WriteLine($"ReplaceAdd:{e.NewStartingIndex}");
                     for (var i = 0; i < e.NewItems.Count; i++)
                     {
                         Add((TB)e.NewItems[i]);
@@ -78,6 +81,7 @@ namespace GameBase.Model
         {
             if (!m_modelToViewModel.ContainsKey(m))
             {
+                Debug.WriteLine($"Add:{m}");
                 m_constructorParams[0] = m;
                 var vm = (T)m_constructor.Invoke(m_constructorParams);
                 m_modelToViewModel[m] = vm;
@@ -90,6 +94,7 @@ namespace GameBase.Model
         {
             if (m_modelToViewModel.ContainsKey(m))
             {
+                Debug.WriteLine($"Remove:{m},{idx}");
                 var vm = m_modelToViewModel[m];
                 m_modelToViewModel.Remove(m);
                 m_viewModelToModel.Remove(vm);
