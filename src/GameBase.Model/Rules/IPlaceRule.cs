@@ -2,7 +2,8 @@
 {
     /// <summary>
     /// Rules used to match edges
-    /// <typeparamref name="P">The type of piece placed at each game board location</typeparamref>
+    /// <typeparamref name="TP">The type of <see cref="Piece"/></typeparamref>
+    /// <typeparamref name="TM">The type of <see cref="Move"/></typeparamref>
     /// </summary>
     public interface IPlaceRule<TP, TM> where TP : Piece where TM : Move
     {

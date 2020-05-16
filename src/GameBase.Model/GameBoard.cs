@@ -6,23 +6,28 @@ using System.Linq;
 
 namespace GameBase.Model
 {
-    public class GameBoard<TP, TM> : IGameBoard<TP, TM> where TP:Piece where TM:Move
+    public abstract class GameBoard<TP, TM> : IGameBoard<TP, TM> where TP:Piece where TM:Move
     {
         private readonly IPlaceRule<TP,TM> m_placeRule;
         private readonly Point m_minCorner;
         private readonly Point m_maxCorner;
-        public GameBoard(IPlaceRule<TP, TM> placeRule):this(placeRule,
+
+        protected GameBoard(IPlaceRule<TP, TM> placeRule):this(placeRule,
             new Point(int.MinValue, int.MinValue),
             new Point(int.MaxValue, int.MaxValue)) { }
 
-        public GameBoard(IPlaceRule<TP, TM> placeRule, int width, int height):
+        protected GameBoard(IPlaceRule<TP, TM> placeRule, int width, int height):
             this(placeRule,
             new Point(0, 0),
             new Point(width -1, height-1))
         { }
 
-        public GameBoard(IPlaceRule<TP, TM> placeRule, Point minCorner, Point maxCorner)
+        private GameBoard(IPlaceRule<TP, TM> placeRule, Point minCorner, Point maxCorner)
         {
+            MinXChanged += (sender, args) => { };
+            MinYChanged += (sender, args) => { };
+            MaxXChanged += (sender, args) => { };
+            MaxYChanged += (sender, args) => { };
             m_placeRule = placeRule;
             m_minCorner = minCorner;
             m_maxCorner = maxCorner;
@@ -33,21 +38,17 @@ namespace GameBase.Model
         public ObservableList<Point> AvailableLocations { get; }
         public ObservableList<Placement<TP,TM>> Placements { get; }
 
-        public List<TM> GetAvailableMoves(TP piece)
+        public IEnumerable<TM> GetAvailableMoves(TP piece)
         {
-            var moves = new List<TM>();
-            if (piece == null)
-            {
-                return moves;
-            }
-
-            moves.AddRange(from l in AvailableLocations from m in GetOptions(l) where m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m) select m);
-            return moves;
+            return piece == GetEmptyPiece()
+                ? Enumerable.Empty<TM>()
+                : AvailableLocations.SelectMany(GetOptions)
+                    .Where(m => m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m));
         }
 
         protected virtual IEnumerable<TM> GetOptions(Point point)
         {
-            return new List<TM>();
+            return Enumerable.Empty<TM>();
         }
 
         public event EventHandler<ChangedValueArgs<int>> MinXChanged;
@@ -55,11 +56,11 @@ namespace GameBase.Model
         public int MinX
         {
             get => m_minX;
-            set
+            private set
             {
                 var old = m_minX;
                 m_minX = value;
-                MinXChanged?.Invoke(this, new ChangedValueArgs<int>(old, value));
+                MinXChanged.Invoke(this, new ChangedValueArgs<int>(old, value));
             }
         }
 
@@ -68,11 +69,11 @@ namespace GameBase.Model
         public int MaxX
         {
             get => m_maxX;
-            set
+            private set
             {
                 var old = m_maxX;
                 m_maxX = value;
-                MaxXChanged?.Invoke(this, new ChangedValueArgs<int>(old, value));
+                MaxXChanged.Invoke(this, new ChangedValueArgs<int>(old, value));
             }
         }
 
@@ -81,11 +82,11 @@ namespace GameBase.Model
         public int MinY
         {
             get => m_minY;
-            set
+            private set
             {
                 var old = m_minY;
                 m_minY = value;
-                MinYChanged?.Invoke(this, new ChangedValueArgs<int>(old, value));
+                MinYChanged.Invoke(this, new ChangedValueArgs<int>(old, value));
             }
         }
 
@@ -94,11 +95,11 @@ namespace GameBase.Model
         public int MaxY
         {
             get => m_maxY;
-            set
+            private set
             {
                 var old = m_maxY;
                 m_maxY = value;
-                MaxYChanged?.Invoke(this, new ChangedValueArgs<int>(old, value));
+                MaxYChanged.Invoke(this, new ChangedValueArgs<int>(old, value));
             }
         }
 
@@ -110,23 +111,23 @@ namespace GameBase.Model
             {
                 foreach (var p in Placements)
                 {
-                    if (p.Move != null)
+                    if (p.Move.IsEmpty) continue;
+                    var cmpX = p.Move.Location.X.CompareTo(pnt.X);
+                    var cmpY = p.Move.Location.Y.CompareTo(pnt.Y);
+                    if (cmpX == 0 && cmpY == 0)
                     {
-                        var cmpX = p.Move.Location.X.CompareTo(pnt.X);
-                        var cmpY = p.Move.Location.Y.CompareTo(pnt.Y);
-                        if (cmpX == 0 && cmpY == 0)
-                        {
-                            return p.Piece;
-                        }
-                        if (cmpX > 0 || (cmpX == 0 && cmpY > 0))
-                        {
-                            break;
-                        }
+                        return p.Piece;
+                    }
+                    if (cmpX > 0 || (cmpX == 0 && cmpY > 0))
+                    {
+                        break;
                     }
                 }
-                return null;
+                return GetEmptyPiece();
             }
         }
+
+        protected abstract TP GetEmptyPiece();
 
         /// <summary>
         /// Add available locations based on the given placement
@@ -142,12 +143,12 @@ namespace GameBase.Model
             return Add(placement, true);
         }
 
-        protected bool Add(Placement<TP,TM> placement, bool mustBeAvailable)
+        private bool Add(Placement<TP,TM> placement, bool mustBeAvailable)
         {
-            if ((placement.Move.Location.X < m_minCorner.X)
-                || (placement.Move.Location.Y < m_minCorner.Y)
-                || (placement.Move.Location.X > m_maxCorner.X)
-                || (placement.Move.Location.Y > m_maxCorner.Y))
+            if (placement.Move.Location.X < m_minCorner.X
+                || placement.Move.Location.Y < m_minCorner.Y
+                || placement.Move.Location.X > m_maxCorner.X
+                || placement.Move.Location.Y > m_maxCorner.Y)
             {
                 throw new IndexOutOfRangeException();
             }

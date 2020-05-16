@@ -9,44 +9,48 @@ namespace GameBase.WPF.ViewModel
     {
         protected readonly Placement<TP, TM> Placement;
         protected readonly IGridManager GridManager;
-        protected AbstractPlacementViewModel(Placement<TP,TM> placement, IGridManager gridManager = null)
+
+        protected AbstractPlacementViewModel(Placement<TP, TM> placement, IGridManager gridManager = null)
         {
+            PropertyChanged += (sender, args) => { };
             Placement = placement;
-            GridManager = gridManager;
-            if(GridManager != null)
-            {
-                GridManager.StartColumnChanged += StartColumnChanged;
-                GridManager.StartRowChanged += StartRowChanged;
-            }
+            GridManager = gridManager ?? DefaultGridManager.Instance;
+            GridManager.StartColumnChanged += OnStartColumnChanged;
+            GridManager.StartRowChanged += OnStartRowChanged;
+            m_move = GetEmptyMove();
         }
 
         private TM m_move;
         public TM Move => Placement.Move ?? m_move;
 
         protected abstract TM GetMove(int locationX, int locationY);
+        protected abstract TM GetEmptyMove();
 
         public virtual void SetCell(DPoint cell)
         {
-            m_move = GetMove(cell.X + (GridManager?.StartColumn ?? 0), cell.Y + (GridManager?.StartRow ?? 0));
+            m_move = GetMove(cell.X + GridManager.StartColumn, cell.Y + GridManager.StartRow);
             NotifyPropertyChanged(nameof(Row));
             NotifyPropertyChanged(nameof(Column));
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
-        private void StartRowChanged(object sender, ChangedValueArgs<int> e)
+
+        private void OnStartRowChanged(object sender, ChangedValueArgs<int> e)
         {
             NotifyPropertyChanged(nameof(Row));
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
 
-        private void StartColumnChanged(object sender, ChangedValueArgs<int> e)
+        private void OnStartColumnChanged(object sender, ChangedValueArgs<int> e)
         {
             NotifyPropertyChanged(nameof(Column));
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
 
-        public bool IsOnGrid => Move != null;
-        public int Column => Move != null ? (Move.Location.X - (GridManager?.StartColumn ?? 0)) : 0;
-        public int Row => Move != null ? (Move.Location.Y - (GridManager?.StartRow ?? 0)) : 0;
+        public bool IsOnGrid => !Move.IsEmpty 
+                                && Column >= 0 && Column < GridManager.Columns
+                                && Row >= 0 && Row < GridManager.Rows;
+        public int Column => Move.Location.X - GridManager.StartColumn;
+        public int Row => Move.Location.Y - GridManager.StartRow;
 
         #region INotifyPropertyChanged Members
 
@@ -65,13 +69,39 @@ namespace GameBase.WPF.ViewModel
         }
 
         #endregion
+
+        private class DefaultGridManager : IGridManager
+        {
+            public static readonly IGridManager Instance = new DefaultGridManager();
+
+            private DefaultGridManager()
+            {
+                StartColumnChanged += (sender, args) => { };
+                StartRowChanged += (sender, args) => { };
+                ColumnsChanged += (sender, args) => { };
+                RowsChanged += (sender, args) => { };
+            }
+
+            public event EventHandler<ChangedValueArgs<int>> StartColumnChanged;
+            public int StartColumn => 0;
+            public event EventHandler<ChangedValueArgs<int>> StartRowChanged;
+            public int StartRow => 0;
+            public event EventHandler<ChangedValueArgs<int>> ColumnsChanged;
+            public int Columns => 0;
+            public event EventHandler<ChangedValueArgs<int>> RowsChanged;
+            public int Rows => 0;
+        }
     }
 
     public interface IGridManager
     {
         event EventHandler<ChangedValueArgs<int>> StartColumnChanged;
         int StartColumn { get; }
+        event EventHandler<ChangedValueArgs<int>> ColumnsChanged;
+        int Columns { get; }
         event EventHandler<ChangedValueArgs<int>> StartRowChanged;
         int StartRow { get; }
+        event EventHandler<ChangedValueArgs<int>> RowsChanged;
+        int Rows { get; }
     }
 }

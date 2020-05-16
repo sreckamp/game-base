@@ -5,17 +5,25 @@ namespace GameBase.Model
 {
     public class Move : IEquatable<Move>
     {
-        public Move(int x, int y)
+        public static readonly Move None = new Move(-1, -1) { IsEmpty = true };
+
+        private Move(int x, int y)
             : this(new Point(x, y))
         {
         }
 
-        public Move(Point location)
+        protected Move(Point location)
         {
             Location = location;
         }
 
-        public Point Location { get; set; }
+        public bool IsEmpty
+        {
+            get;
+            protected set;
+        }
+
+        public Point Location { get; protected set; }
 
         public override bool Equals(object other)
         {
@@ -31,11 +39,7 @@ namespace GameBase.Model
 
         public bool Equals(Move other)
         {
-            if (other != null)
-            {
-                return Location.Equals(other.Location);
-            }
-            return false;
+            return Location.Equals(other?.Location);
         }
 
         #endregion
@@ -47,8 +51,9 @@ namespace GameBase.Model
 
         public static implicit operator Point(Move m)
         {
-            return (m == null) ? new Point(-1,-1) : m.Location;
+            return m.Location;
         }
+
         public static implicit operator Move(Point p)
         {
             return new Move(p);

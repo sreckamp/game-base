@@ -10,26 +10,24 @@ namespace GameBase.Model
             NewVal = newVal;
         }
 
-        public T OldVal { get; private set; }
-        public T NewVal { get; private set; }
+        public T OldVal { get; }
+        public T NewVal { get; }
     }
 
     public class ChangeValueProperty<T>
     {
         private T m_value;
 
-        public ChangeValueProperty(T defaultVal = default(T), EventHandler valueChangeOccuredHandler = null)
+        public ChangeValueProperty(T defaultVal = default, EventHandler valueChangeOccuredHandler = null)
         {
             m_value = defaultVal;
-            if(valueChangeOccuredHandler != null)
-            {
-                ValueChangeOccured += valueChangeOccuredHandler;
-            }
+            ValueChanged += (sender, args) => { };
+            ValueChangeOccured += valueChangeOccuredHandler ?? ((sender, args) => { });
         }
 
         public event EventHandler<ChangedValueArgs<T>> ValueChanged;
         private event EventHandler ValueChangeOccured;
-        public T Value
+        private T Value
         {
             get => m_value;
             set
@@ -44,6 +42,12 @@ namespace GameBase.Model
         public static implicit operator T(ChangeValueProperty<T> prop)
         {
             return prop.Value;
+        }
+
+        public static implicit operator ChangeValueProperty<T>(T value)
+        {
+            var prop = new ChangeValueProperty<T> {Value = value};
+            return prop;
         }
     }
 }

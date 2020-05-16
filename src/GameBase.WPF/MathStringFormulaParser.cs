@@ -6,31 +6,31 @@ namespace GameBase.WPF
 {
     public class MathStringFormulaParser<T> : AbstractStringFormulaParser<T>
     {
-        public MathStringFormulaParser() : base(SGrammer)
+        public MathStringFormulaParser() : base(SGrammar)
         {
         }
 
-        private static readonly MathGrammer SGrammer = new MathGrammer();
-        private static Dictionary<Type, IOperators> _sOperators = new Dictionary<Type,IOperators>();
+        private static readonly MathGrammar SGrammar = new MathGrammar();
+        private static readonly Dictionary<Type, IOperators> SSOperators = new Dictionary<Type,IOperators>();
 
         static MathStringFormulaParser()
         {
-            _sOperators[typeof(SByte)] = _sOperators[typeof(sbyte)] = new SbyteOperators();
-            _sOperators[typeof(Byte)] = _sOperators[typeof(byte)] = new ByteOperators();
-            _sOperators[typeof(Int16)] = _sOperators[typeof(short)] = new ShortOperators();
-            _sOperators[typeof(UInt16)] = _sOperators[typeof(ushort)] = new UshortOperators();
-            _sOperators[typeof(Int32)] = _sOperators[typeof(int)] = new IntOperators();
-            _sOperators[typeof(UInt32)] = _sOperators[typeof(uint)] = new UintOperators();
-            _sOperators[typeof(Int64)] = _sOperators[typeof(long)] = new LongOperators();
-            _sOperators[typeof(UInt64)] = _sOperators[typeof(ulong)] = new UlongOperators();
-            _sOperators[typeof(float)] = new FloatOperators();
-            _sOperators[typeof(Double)] = _sOperators[typeof(double)] = new DoubleOperators();
-            _sOperators[typeof(Decimal)] = _sOperators[typeof(decimal)] = new DecimalOperators();
+            SSOperators[typeof(SByte)] = SSOperators[typeof(sbyte)] = new SbyteOperators();
+            SSOperators[typeof(Byte)] = SSOperators[typeof(byte)] = new ByteOperators();
+            SSOperators[typeof(Int16)] = SSOperators[typeof(short)] = new ShortOperators();
+            SSOperators[typeof(UInt16)] = SSOperators[typeof(ushort)] = new UshortOperators();
+            SSOperators[typeof(Int32)] = SSOperators[typeof(int)] = new IntOperators();
+            SSOperators[typeof(UInt32)] = SSOperators[typeof(uint)] = new UintOperators();
+            SSOperators[typeof(Int64)] = SSOperators[typeof(long)] = new LongOperators();
+            SSOperators[typeof(UInt64)] = SSOperators[typeof(ulong)] = new UlongOperators();
+            SSOperators[typeof(float)] = new FloatOperators();
+            SSOperators[typeof(Double)] = SSOperators[typeof(double)] = new DoubleOperators();
+            SSOperators[typeof(Decimal)] = SSOperators[typeof(decimal)] = new DecimalOperators();
         }
 
-        private class MathGrammer : AbstractGrammer
+        private class MathGrammar : AbstractGrammer
         {
-            public MathGrammer()
+            public MathGrammar()
                 : base
                     (
                          new Operator("(", OperatorType.GroupingOpen)
@@ -46,12 +46,8 @@ namespace GameBase.WPF
 
             protected override ConstantProcess GetConstantProcess(string token)
             {
-                var ops = (IOperators<T>)_sOperators[typeof(T)];
-                if(ops.IsParsable(token))
-                {
-                    return new ConstantProcess(ops.Parse(token));
-                }
-                return null;
+                var ops = (IOperators<T>)SSOperators[typeof(T)];
+                return ops.IsParsable(token) ? new ConstantProcess(ops.Parse(token)) : null;
             }
         }
 
@@ -63,7 +59,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)_sOperators[typeof(T)];
+                var ops = (IOperators<T>)SSOperators[typeof(T)];
                 return ops.Add(left,right);
             }
 
@@ -77,7 +73,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)_sOperators[typeof(T)];
+                var ops = (IOperators<T>)SSOperators[typeof(T)];
                 return ops.Subtract(left, right);
             }
         }
@@ -90,7 +86,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)_sOperators[typeof(T)];
+                var ops = (IOperators<T>)SSOperators[typeof(T)];
                 return ops.Multiply(left, right);
             }
         }
@@ -103,7 +99,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)_sOperators[typeof(T)];
+                var ops = (IOperators<T>)SSOperators[typeof(T)];
                 return ops.Divide(left, right);
             }
         }
@@ -116,7 +112,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)_sOperators[typeof(T)];
+                var ops = (IOperators<T>)SSOperators[typeof(T)];
                 return ops.Modulo(left, right);
             }
         }
@@ -148,22 +144,18 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
-                return sbyte.TryParse(token, style, null, out var val);
+                if (!token.StartsWith("0x")) return sbyte.TryParse(token, style, null, out _);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
+                return sbyte.TryParse(token, style, null, out _);
             }
             public sbyte Parse(string token)
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
+                if (!token.StartsWith("0x")) return sbyte.Parse(token, style);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
                 return sbyte.Parse(token, style);
             }
         }
@@ -182,12 +174,10 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
-                return byte.TryParse(token, style, null, out var val);
+                if (!token.StartsWith("0x")) return byte.TryParse(token, style, null, out _);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
+                return byte.TryParse(token, style, null, out _);
             }
             public byte Parse(string token)
             {
@@ -216,12 +206,10 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
-                return short.TryParse(token, style, null, out var val);
+                if (!token.StartsWith("0x")) return short.TryParse(token, style, null, out _);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
+                return short.TryParse(token, style, null, out _);
             }
             public short Parse(string token)
             {
@@ -250,22 +238,18 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
-                return ushort.TryParse(token, style, null, out var val);
+                if (!token.StartsWith("0x")) return ushort.TryParse(token, style, null, out _);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
+                return ushort.TryParse(token, style, null, out _);
             }
             public ushort Parse(string token)
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
+                if (!token.StartsWith("0x")) return ushort.Parse(token, style);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
                 return ushort.Parse(token, style);
             }
         }
@@ -284,22 +268,18 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
-                return int.TryParse(token, style, null, out var val);
+                if (!token.StartsWith("0x")) return int.TryParse(token, style, null, out _);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
+                return int.TryParse(token, style, null, out _);
             }
             public int Parse(string token)
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
+                if (!token.StartsWith("0x")) return int.Parse(token, style);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
                 return int.Parse(token, style);
             }
         }
@@ -318,22 +298,18 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
-                return uint.TryParse(token, style, null, out var val);
+                if (!token.StartsWith("0x")) return uint.TryParse(token, style, null, out _);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
+                return uint.TryParse(token, style, null, out _);
             }
             public uint Parse(string token)
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
+                if (!token.StartsWith("0x")) return uint.Parse(token, style);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
                 return uint.Parse(token, style);
             }
         }
@@ -352,22 +328,18 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
-                return long.TryParse(token, style, null, out var val);
+                if (!token.StartsWith("0x")) return long.TryParse(token, style, null, out _);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
+                return long.TryParse(token, style, null, out _);
             }
             public long Parse(string token)
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
+                if (!token.StartsWith("0x")) return long.Parse(token, style);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
                 return long.Parse(token, style);
             }
         }
@@ -386,12 +358,10 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
-                return ulong.TryParse(token, style, null, out var val);
+                if (!token.StartsWith("0x")) return ulong.TryParse(token, style, null, out _);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
+                return ulong.TryParse(token, style, null, out _);
             }
             public ulong Parse(string token)
             {
@@ -416,7 +386,7 @@ namespace GameBase.WPF
             public float Divide(float var1, float var2) { return var1 / var2; }
             public float Modulo(float var1, float var2) { return var1 % var2; }
             public float Negate(float var) { return -var; }
-            public bool IsParsable(string token) { return float.TryParse(token, out var val); }
+            public bool IsParsable(string token) { return float.TryParse(token, out _); }
             public float Parse(string token) { return float.Parse(token); }
         }
 
@@ -430,7 +400,7 @@ namespace GameBase.WPF
             public double Divide(double var1, double var2) { return var1 / var2; }
             public double Modulo(double var1, double var2) { return var1 % var2; }
             public double Negate(double var) { return -var; }
-            public bool IsParsable(string token) { return double.TryParse(token, out var val); }
+            public bool IsParsable(string token) { return double.TryParse(token, out _); }
             public double Parse(string token) { return double.Parse(token); }
         }
 
@@ -444,7 +414,7 @@ namespace GameBase.WPF
             public decimal Divide(decimal var1, decimal var2) { return var1 / var2; }
             public decimal Modulo(decimal var1, decimal var2) { return var1 % var2; }
             public decimal Negate(decimal var) { return -var; }
-            public bool IsParsable(string token) { return decimal.TryParse(token, out var val); }
+            public bool IsParsable(string token) { return decimal.TryParse(token, out _); }
             public decimal Parse(string token) { return decimal.Parse(token); }
         }
     }

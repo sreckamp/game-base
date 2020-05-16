@@ -22,8 +22,10 @@ namespace GameBase.Model
         private readonly Dictionary<T, TB> m_viewModelToModel = new Dictionary<T, TB>();
         private readonly ConstructorInfo m_constructor;
         private readonly object[] m_constructorParams;
+
         public MappingCollection(IObservableList<TB> models, params object[] constructorParams)
         {
+            CollectionChanged += (sender, args) => { };
             m_constructorParams = new object[constructorParams.Length + 1];
             var types = new Type[m_constructorParams.Length];
             types[0] = typeof(TB);
@@ -32,7 +34,9 @@ namespace GameBase.Model
                 m_constructorParams[i + 1] = constructorParams[i];
                 types[i + 1] = constructorParams[i].GetType();
             }
-            m_constructor = typeof(T).GetConstructor(types) ?? throw new ArgumentException(typeof(T).Name + " cannot find constructor.");
+
+            m_constructor = typeof(T).GetConstructor(types) ??
+                            throw new ArgumentException(typeof(T).Name + " cannot find constructor.");
             m_models = models;
             m_models.CollectionChanged += models_CollectionChanged;
             foreach (var m in models)
@@ -47,27 +51,31 @@ namespace GameBase.Model
             {
                 case NotifyCollectionChangedAction.Add:
                     Debug.WriteLine($"Add:{e.NewStartingIndex}");
-                    for (var i = 0; i < e.NewItems.Count; i++)
+                    foreach (var t in e.NewItems)
                     {
-                        Add((TB)e.NewItems[i]);
+                        Add((TB) t);
                     }
+
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     for (var i = 0; i < e.OldItems.Count; i++)
                     {
-                        Remove((TB)e.OldItems[i], e.OldStartingIndex + i);
+                        Remove((TB) e.OldItems[i], e.OldStartingIndex + i);
                     }
+
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     for (var i = 0; i < e.OldItems.Count; i++)
                     {
-                        Remove((TB)e.OldItems[i], e.OldStartingIndex + i);
+                        Remove((TB) e.OldItems[i], e.OldStartingIndex + i);
                     }
+
                     Debug.WriteLine($"ReplaceAdd:{e.NewStartingIndex}");
-                    for (var i = 0; i < e.NewItems.Count; i++)
+                    foreach (var t in e.NewItems)
                     {
-                        Add((TB)e.NewItems[i]);
+                        Add((TB) t);
                     }
+
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     m_modelToViewModel.Clear();
@@ -79,27 +87,23 @@ namespace GameBase.Model
 
         protected virtual void Add(TB m)
         {
-            if (!m_modelToViewModel.ContainsKey(m))
-            {
-                Debug.WriteLine($"Add:{m}");
-                m_constructorParams[0] = m;
-                var vm = (T)m_constructor.Invoke(m_constructorParams);
-                m_modelToViewModel[m] = vm;
-                m_viewModelToModel[vm] = m;
-                NotifyCollectionChanged(NotifyCollectionChangedAction.Add, vm, m_models.IndexOf(m));
-            }
+            if (m_modelToViewModel.ContainsKey(m)) return;
+            Debug.WriteLine($"Add:{m}");
+            m_constructorParams[0] = m;
+            var vm = (T) m_constructor.Invoke(m_constructorParams);
+            m_modelToViewModel[m] = vm;
+            m_viewModelToModel[vm] = m;
+            NotifyCollectionChanged(NotifyCollectionChangedAction.Add, vm, m_models.IndexOf(m));
         }
 
         protected virtual void Remove(TB m, int idx)
         {
-            if (m_modelToViewModel.ContainsKey(m))
-            {
-                Debug.WriteLine($"Remove:{m},{idx}");
-                var vm = m_modelToViewModel[m];
-                m_modelToViewModel.Remove(m);
-                m_viewModelToModel.Remove(vm);
-                NotifyCollectionChanged(NotifyCollectionChangedAction.Remove, vm, idx);
-            }
+            if (!m_modelToViewModel.ContainsKey(m)) return;
+            Debug.WriteLine($"Remove:{m},{idx}");
+            var vm = m_modelToViewModel[m];
+            m_modelToViewModel.Remove(m);
+            m_viewModelToModel.Remove(vm);
+            NotifyCollectionChanged(NotifyCollectionChangedAction.Remove, vm, idx);
         }
 
         public T this[TB item]
@@ -111,6 +115,7 @@ namespace GameBase.Model
                 {
                     val = m_modelToViewModel[item];
                 }
+
                 return val;
             }
         }
@@ -119,10 +124,11 @@ namespace GameBase.Model
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        protected virtual void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default(T), int idx = -1)
+        protected virtual void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default(T),
+            int idx = -1)
         {
             var args = new NotifyCollectionChangedEventArgs(action, vm, idx);
-            CollectionChanged?.Invoke(this, args);
+            CollectionChanged.Invoke(this, args);
         }
 
         #endregion
@@ -132,14 +138,15 @@ namespace GameBase.Model
         public IEnumerator<T> GetEnumerator()
         {
             var viewModels = new List<T>();
-            for(var idx = 0; idx < m_models.Count;idx++)
+            for (var idx = 0; idx < m_models.Count; idx++)
             {
                 var m = m_models[idx];
-                if(m_modelToViewModel.ContainsKey(m))
+                if (m_modelToViewModel.ContainsKey(m))
                 {
                     viewModels.Add(m_modelToViewModel[m]);
                 }
             }
+
             return viewModels.GetEnumerator();
         }
 
@@ -157,7 +164,8 @@ namespace GameBase.Model
                     viewModels.Add(m_modelToViewModel[m]);
                 }
             }
-            return ((IEnumerable)viewModels).GetEnumerator();
+
+            return ((IEnumerable) viewModels).GetEnumerator();
         }
 
         #endregion

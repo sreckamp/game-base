@@ -111,7 +111,7 @@ namespace GameBase.WPF
                 Operators = operators;
             }
 
-            public Operator[] Operators { get; private set; }
+            public Operator[] Operators { get; }
 
             public bool IsConstant(string token)
             {
@@ -176,11 +176,11 @@ namespace GameBase.WPF
                 }
             }
 
-            public int ArgumentCount { get; private set; }
-            public string Symbol { get; private set; }
-            public OperatorType OperatorType { get; private set; }
-            public int Precedence { get; private set; }
-            public Type OperatorImplementation { get; private set; }
+            public int ArgumentCount { get; }
+            public string Symbol { get; }
+            public OperatorType OperatorType { get; }
+            public int Precedence { get; }
+            public Type OperatorImplementation { get; }
 
             public override string ToString()
             {

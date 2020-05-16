@@ -17,6 +17,7 @@ namespace GameBase.WPF.ViewModel
             {
                 list.CollectionChanged += OnCollectionChanged;
             }
+            CollectionChanged += (sender, args) => { };
         }
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

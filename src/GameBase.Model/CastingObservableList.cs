@@ -11,6 +11,7 @@ namespace GameBase.Model
 
         public CastingObservableList(IObservableList<TB> list)
         {
+            CollectionChanged += (sender, args) => { };
             m_list = list;
             list.CollectionChanged += OnCollectionChanged;
         }
@@ -105,7 +106,7 @@ namespace GameBase.Model
 
         #endregion
 
-        public class CastingEnumerator : IEnumerator<T>
+        private class CastingEnumerator : IEnumerator<T>
         {
             private readonly IEnumerator<TB> m_baseEnum;
             public CastingEnumerator(IEnumerator<TB> baseEnum)

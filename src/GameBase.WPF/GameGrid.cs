@@ -12,13 +12,13 @@ namespace GameBase.WPF
         {
             Cell = cell;
         }
-        public DPoint Cell { get; private set; }
+        public DPoint Cell { get; }
     }
 
     public class GameGrid : Grid
     {
         public static readonly RoutedEvent OverCellEvent = EventManager.RegisterRoutedEvent(
-            "OverCell", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(GameGrid));
+            nameof(OverCell), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(GameGrid));
 
         public event RoutedEventHandler OverCell
         {
@@ -28,6 +28,7 @@ namespace GameBase.WPF
 
         public GameGrid()
         {
+            OverCell += (sender, args) => { };
             Background = new SolidColorBrush(Colors.Transparent);
         }
 

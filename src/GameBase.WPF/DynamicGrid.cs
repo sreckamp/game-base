@@ -11,13 +11,14 @@ namespace GameBase.WPF
     {
         public DynamicGrid()
         {
+            OverCell += (sender, args) => { };
             Background = new SolidColorBrush(Colors.Transparent);
         }
 
         #region OverCell
 
         public static readonly RoutedEvent OverCellEvent = EventManager.RegisterRoutedEvent(
-            "OverCell", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(DynamicGrid));
+            nameof(OverCell), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(DynamicGrid));
 
         public event RoutedEventHandler OverCell
         {

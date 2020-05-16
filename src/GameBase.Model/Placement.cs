@@ -11,8 +11,8 @@ namespace GameBase.Model
             Move = move;
         }
 
-        public TP Piece { get; private set; }
-        public TM Move { get; private set; }
+        public TP Piece { get; }
+        public TM Move { get; }
 
         #region IComparable Members
 
@@ -37,20 +37,15 @@ namespace GameBase.Model
                 {
                     return 1;
                 }
-                if (Move.Location.X == other.Move.Location.X)
-                {
-                    return Move.Location.Y.CompareTo(other.Move.Location.Y);
-                }
-                return Move.Location.X.CompareTo(other.Move.Location.X);
+                return Move.Location.X == other.Move.Location.X ? Move.Location.Y.CompareTo(other.Move.Location.Y) : Move.Location.X.CompareTo(other.Move.Location.X);
             }
-            else if (other.Move == null)
+
+            if (other.Move == null)
             {
                 return 0;
             }
-            else
-            {
-                return -1;
-            }
+
+            return -1;
         }
 
         #endregion
@@ -61,9 +56,7 @@ namespace GameBase.Model
 
         public override string ToString()
         {
-            var val = Piece?.ToString() ?? "<<null>>";
-            if (val != null) val += "@";
-            return val + Move.ToString();
+            return Piece + "@" + Move;
         }
     }
 }
