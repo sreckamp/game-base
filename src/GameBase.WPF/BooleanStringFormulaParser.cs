@@ -4,16 +4,16 @@ namespace GameBase.WPF
 {
     public class BooleanStringFormulaParser : AbstractStringFormulaParser<bool>
     {
-        public BooleanStringFormulaParser() : base(SGrammer) { }
+        public BooleanStringFormulaParser() : base(SGrammar) { }
 
-        private static readonly BooleanGrammer SGrammer = new BooleanGrammer();
+        private static readonly BooleanGrammar SGrammar = new BooleanGrammar();
 
-        private class BooleanGrammer : AbstractGrammer
+        private class BooleanGrammar : Grammar
         {
             private Dictionary<string, ConstantProcess> m_constants =
                 new Dictionary<string, ConstantProcess>();
 
-            public BooleanGrammer()
+            public BooleanGrammar()
                 : base(
                         new Operator("(", OperatorType.GroupingOpen),
                         new Operator(")", OperatorType.GroupingClose),
@@ -41,7 +41,7 @@ namespace GameBase.WPF
             }
         }
 
-        private class AndProcess : AbstractBinaryOperator
+        private class AndProcess : BinaryOperator
         {
             public AndProcess(IEquationProcessor left, IEquationProcessor right)
                 : base("&&", left, right)
@@ -53,7 +53,7 @@ namespace GameBase.WPF
             }
         }
 
-        private class OrProcess : AbstractBinaryOperator
+        private class OrProcess : BinaryOperator
         {
             public OrProcess(IEquationProcessor left, IEquationProcessor right)
                 : base("||", left, right)
@@ -65,7 +65,7 @@ namespace GameBase.WPF
             }
         }
 
-        private class XorProcess : AbstractBinaryOperator
+        private class XorProcess : BinaryOperator
         {
             public XorProcess(IEquationProcessor left, IEquationProcessor right)
                 : base("^", left, right)

@@ -1,8 +1,8 @@
-﻿using System.Windows.Controls;
-using System.Windows;
-using DPoint = System.Drawing.Point;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using DPoint = System.Drawing.Point;
 
 namespace GameBase.WPF
 {

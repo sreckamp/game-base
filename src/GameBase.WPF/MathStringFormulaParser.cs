@@ -4,31 +4,31 @@ using System.Globalization;
 
 namespace GameBase.WPF
 {
-    public class MathStringFormulaParser<T> : AbstractStringFormulaParser<T>
+    public class MathStringFormulaParser<T> : AbstractStringFormulaParser<T> where T:struct
     {
         public MathStringFormulaParser() : base(SGrammar)
         {
         }
 
         private static readonly MathGrammar SGrammar = new MathGrammar();
-        private static readonly Dictionary<Type, IOperators> SSOperators = new Dictionary<Type,IOperators>();
+        private static readonly Dictionary<Type, IOperators> SsOperators = new Dictionary<Type,IOperators>();
 
         static MathStringFormulaParser()
         {
-            SSOperators[typeof(SByte)] = SSOperators[typeof(sbyte)] = new SbyteOperators();
-            SSOperators[typeof(Byte)] = SSOperators[typeof(byte)] = new ByteOperators();
-            SSOperators[typeof(Int16)] = SSOperators[typeof(short)] = new ShortOperators();
-            SSOperators[typeof(UInt16)] = SSOperators[typeof(ushort)] = new UshortOperators();
-            SSOperators[typeof(Int32)] = SSOperators[typeof(int)] = new IntOperators();
-            SSOperators[typeof(UInt32)] = SSOperators[typeof(uint)] = new UintOperators();
-            SSOperators[typeof(Int64)] = SSOperators[typeof(long)] = new LongOperators();
-            SSOperators[typeof(UInt64)] = SSOperators[typeof(ulong)] = new UlongOperators();
-            SSOperators[typeof(float)] = new FloatOperators();
-            SSOperators[typeof(Double)] = SSOperators[typeof(double)] = new DoubleOperators();
-            SSOperators[typeof(Decimal)] = SSOperators[typeof(decimal)] = new DecimalOperators();
+            SsOperators[typeof(SByte)] = SsOperators[typeof(sbyte)] = new SbyteOperators();
+            SsOperators[typeof(Byte)] = SsOperators[typeof(byte)] = new ByteOperators();
+            SsOperators[typeof(Int16)] = SsOperators[typeof(short)] = new ShortOperators();
+            SsOperators[typeof(UInt16)] = SsOperators[typeof(ushort)] = new UshortOperators();
+            SsOperators[typeof(Int32)] = SsOperators[typeof(int)] = new IntOperators();
+            SsOperators[typeof(UInt32)] = SsOperators[typeof(uint)] = new UintOperators();
+            SsOperators[typeof(Int64)] = SsOperators[typeof(long)] = new LongOperators();
+            SsOperators[typeof(UInt64)] = SsOperators[typeof(ulong)] = new UlongOperators();
+            SsOperators[typeof(float)] = new FloatOperators();
+            SsOperators[typeof(Double)] = SsOperators[typeof(double)] = new DoubleOperators();
+            SsOperators[typeof(Decimal)] = SsOperators[typeof(decimal)] = new DecimalOperators();
         }
 
-        private class MathGrammar : AbstractGrammer
+        private class MathGrammar : Grammar
         {
             public MathGrammar()
                 : base
@@ -46,12 +46,12 @@ namespace GameBase.WPF
 
             protected override ConstantProcess GetConstantProcess(string token)
             {
-                var ops = (IOperators<T>)SSOperators[typeof(T)];
+                var ops = (IOperators<T>)SsOperators[typeof(T)];
                 return ops.IsParsable(token) ? new ConstantProcess(ops.Parse(token)) : null;
             }
         }
 
-        private class AddProcess : AbstractBinaryOperator
+        private class AddProcess : BinaryOperator
         {
             public AddProcess(IEquationProcessor left, IEquationProcessor right)
                 : base("+", left, right)
@@ -59,13 +59,13 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SSOperators[typeof(T)];
+                var ops = (IOperators<T>)SsOperators[typeof(T)];
                 return ops.Add(left,right);
             }
 
         }
 
-        private class SubtractProcess : AbstractBinaryOperator
+        private class SubtractProcess : BinaryOperator
         {
             public SubtractProcess(IEquationProcessor left, IEquationProcessor right)
                 : base("-", left, right)
@@ -73,12 +73,12 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SSOperators[typeof(T)];
+                var ops = (IOperators<T>)SsOperators[typeof(T)];
                 return ops.Subtract(left, right);
             }
         }
 
-        private class MultiplyProcess : AbstractBinaryOperator
+        private class MultiplyProcess : BinaryOperator
         {
             public MultiplyProcess(IEquationProcessor left, IEquationProcessor right)
                 : base("*", left, right)
@@ -86,12 +86,12 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SSOperators[typeof(T)];
+                var ops = (IOperators<T>)SsOperators[typeof(T)];
                 return ops.Multiply(left, right);
             }
         }
 
-        private class DivideProcess : AbstractBinaryOperator
+        private class DivideProcess : BinaryOperator
         {
             public DivideProcess(IEquationProcessor left, IEquationProcessor right)
                 : base("/", left, right)
@@ -99,12 +99,12 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SSOperators[typeof(T)];
+                var ops = (IOperators<T>)SsOperators[typeof(T)];
                 return ops.Divide(left, right);
             }
         }
 
-        private class ModuloProcess : AbstractBinaryOperator
+        private class ModuloProcess : BinaryOperator
         {
             public ModuloProcess(IEquationProcessor left, IEquationProcessor right)
                 : base("%", left, right)
@@ -112,7 +112,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SSOperators[typeof(T)];
+                var ops = (IOperators<T>)SsOperators[typeof(T)];
                 return ops.Modulo(left, right);
             }
         }

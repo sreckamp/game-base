@@ -1,4 +1,5 @@
-﻿namespace GameBase.Model
+﻿// ReSharper disable UnusedMember.Global
+namespace GameBase.Model
 {
     public enum GameResult
     {
@@ -8,19 +9,17 @@
         Draw
     }
 
+    // ReSharper disable once UnusedType.Global
     public static class GameResultExtensions
     {
         public static GameResult Opposite(this GameResult result)
         {
-            switch(result)
+            return result switch
             {
-                case GameResult.Win:
-                    return GameResult.Lose;
-                case GameResult.Lose:
-                    return GameResult.Win;
-                default:
-                    return result;
-            }
+                GameResult.Win => GameResult.Lose,
+                GameResult.Lose => GameResult.Win,
+                _ => result
+            };
         }
     }
 }

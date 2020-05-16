@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Markup;
-using System.Windows.Data;
-using System.Windows;
 using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Markup;
 
 namespace GameBase.WPF
 {
@@ -12,7 +13,7 @@ namespace GameBase.WPF
     {
         #region IValueConverter Members
 
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             var result = false;
             var value = values[0];
@@ -42,7 +43,7 @@ namespace GameBase.WPF
             return DependencyProperty.UnsetValue;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -59,7 +60,7 @@ namespace GameBase.WPF
     {
         #region IValueConverter Members
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var sb = new StringBuilder();
             sb.Append('[');
@@ -77,7 +78,7 @@ namespace GameBase.WPF
             return sb.ToString();
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -94,12 +95,12 @@ namespace GameBase.WPF
     {
         #region IValueConverter Members
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -116,11 +117,11 @@ namespace GameBase.WPF
     {
         #region IValueConverter Members
 
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             var result = false;
-            if ((values[0] is bool bv && bv)
-                || (values[0] != null && values[0] != DependencyProperty.UnsetValue))
+            if (values[0] is bool bv && bv
+                || values[0] != null && values[0] != DependencyProperty.UnsetValue)
             {
                 result = true;
             }
@@ -141,7 +142,7 @@ namespace GameBase.WPF
             return DependencyProperty.UnsetValue;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -158,7 +159,7 @@ namespace GameBase.WPF
     {
         #region IValueConverter Members
 
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             var foundNull = false;
             for (var i = 0; i < values.Length;i++ )
@@ -169,10 +170,8 @@ namespace GameBase.WPF
                     {
                         return values[i];
                     }
-                    else
-                    {
-                        foundNull = true;
-                    }
+
+                    foundNull = true;
                 }
             }
             if (foundNull)
@@ -182,7 +181,7 @@ namespace GameBase.WPF
             return DependencyProperty.UnsetValue;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -207,7 +206,7 @@ namespace GameBase.WPF
 
         #region IValueConverter Members
 
-        public override object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public override object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             parameter = parameter ?? "A:A";
             SplitParameter(parameter.ToString(), out var names, out var formula);
@@ -290,7 +289,7 @@ namespace GameBase.WPF
             }
             else if (value is Visibility)
             {
-                val = ((Visibility)value == Visibility.Visible);
+                val = (Visibility)value == Visibility.Visible;
             }
             else if (value != null && value != DependencyProperty.UnsetValue)
             {
@@ -366,7 +365,7 @@ namespace GameBase.WPF
     {
         #region IValueConverter Members
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool)
             {
@@ -382,7 +381,7 @@ namespace GameBase.WPF
             return Visibility.Hidden;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -399,20 +398,18 @@ namespace GameBase.WPF
     {
         #region IValueConverter Members
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var result = value?.Equals(parameter) ?? parameter == null;
             if (targetType == typeof(Visibility))
             {
                 return result ? Visibility.Visible : Visibility.Hidden;
             }
-            else
-            {
-                return result;
-            }
+
+            return result;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -429,7 +426,7 @@ namespace GameBase.WPF
     /// Process formula of the format var1,var2=>var1||var2
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class AbstractFormulaConverter<T> : MarkupExtension, IMultiValueConverter
+    public abstract class AbstractFormulaConverter<T> : MarkupExtension, IMultiValueConverter where T:struct
     {
         private readonly AbstractStringFormulaParser<T> m_parser;
 
@@ -440,7 +437,7 @@ namespace GameBase.WPF
 
         #region IValueConverter Members
 
-        public virtual object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public virtual object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (parameter == null) parameter = "A:A";
             SplitParameter(parameter.ToString(), out var names, out var formula);
@@ -448,7 +445,7 @@ namespace GameBase.WPF
             return Calculate(formula, data);
         }
 
-        public object[] ConvertBack(object value, Type[] targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

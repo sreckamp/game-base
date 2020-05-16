@@ -5,13 +5,6 @@ namespace GameBase.Model
 {
     public class Move : IEquatable<Move>
     {
-        public static readonly Move None = new Move(-1, -1) { IsEmpty = true };
-
-        private Move(int x, int y)
-            : this(new Point(x, y))
-        {
-        }
-
         protected Move(Point location)
         {
             Location = location;
@@ -23,11 +16,12 @@ namespace GameBase.Model
             protected set;
         }
 
-        public Point Location { get; protected set; }
+        public Point Location { get; }
 
         public override bool Equals(object other)
         {
-            return Equals(other as Move);
+            if (!(other is Move m)) return false;
+            return Equals(m);
         }
 
         public override int GetHashCode()

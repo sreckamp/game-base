@@ -1,11 +1,12 @@
-﻿using GameBase.Model;
-using System;
+﻿using System;
 using System.ComponentModel;
+using System.Windows;
+using GameBase.Model;
 using DPoint = System.Drawing.Point;
 
 namespace GameBase.WPF.ViewModel
 {
-    public abstract class AbstractPlacementViewModel<TP,TM> : INotifyPropertyChanged where TP:Piece where TM:Move
+    public abstract class AbstractPlacementViewModel<TP,TM> : INotifyPropertyChanged where TP:IPiece where TM:Move
     {
         protected readonly Placement<TP, TM> Placement;
         protected readonly IGridManager GridManager;
@@ -58,13 +59,13 @@ namespace GameBase.WPF.ViewModel
 
         protected void NotifyPropertyChanged(string name)
         {
-            if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+            if (Application.Current.Dispatcher.CheckAccess())
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<string>(NotifyPropertyChanged), name);
+                Application.Current.Dispatcher.Invoke(new Action<string>(NotifyPropertyChanged), name);
             }
         }
 

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Windows;
 using GameBase.Model;
 
 namespace GameBase.WPF.ViewModel
@@ -19,13 +20,13 @@ namespace GameBase.WPF.ViewModel
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
+            if (Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
                 CollectionChanged?.Invoke(sender, e);
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>(OnCollectionChanged), sender, e);
+                Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>(OnCollectionChanged), sender, e);
             }
         }
 

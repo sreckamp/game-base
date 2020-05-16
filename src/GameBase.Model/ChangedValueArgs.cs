@@ -14,6 +14,7 @@ namespace GameBase.Model
         public T NewVal { get; }
     }
 
+    // ReSharper disable once UnusedType.Global
     public class ChangeValueProperty<T>
     {
         private T m_value;

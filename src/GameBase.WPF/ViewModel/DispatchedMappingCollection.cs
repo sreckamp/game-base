@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Diagnostics;
+using System.Windows;
 using GameBase.Model;
 
 namespace GameBase.WPF.ViewModel
@@ -21,25 +21,25 @@ namespace GameBase.WPF.ViewModel
 
         protected override void Add(TB b)
         {
-            if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
+            if (Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
                 base.Add(b);
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<TB>(Add), b);
+                Application.Current.Dispatcher.Invoke(new Action<TB>(Add), b);
             }
         }
 
         protected override void Remove(TB b, int idx)
         {
-            if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
+            if (Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
                 base.Remove(b, idx);
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<TB, int>(Remove), b, idx);
+                Application.Current.Dispatcher.Invoke(new Action<TB, int>(Remove), b, idx);
             }
         }
 
@@ -47,13 +47,13 @@ namespace GameBase.WPF.ViewModel
 
         protected override void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default, int idx = -1)
         {
-            if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
+            if (Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
                 base.NotifyCollectionChanged(action, vm, idx);
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<NotifyCollectionChangedAction, T, int>(NotifyCollectionChanged), action, vm, idx);
+                Application.Current.Dispatcher.Invoke(new Action<NotifyCollectionChangedAction, T, int>(NotifyCollectionChanged), action, vm, idx);
             }
         }
 

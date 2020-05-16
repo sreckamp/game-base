@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace GameBase.Model
@@ -14,9 +15,8 @@ namespace GameBase.Model
     /// <typeparam name="T">The target Type, needs to have a constructor that takes
     /// the base as an argument</typeparam>
     /// <typeparam name="TB">The base type that the source collection is based on.</typeparam>
-    public class MappingCollection<T, TB> : IObservableList<T>
+    public class MappingCollection<T, TB> : IObservableList<T> where T : notnull where TB : notnull
     {
-        private readonly object m_modelsLock = new object();
         private readonly IObservableList<TB> m_models;
         private readonly Dictionary<TB, T> m_modelToViewModel = new Dictionary<TB, T>();
         private readonly Dictionary<T, TB> m_viewModelToModel = new Dictionary<T, TB>();
@@ -41,7 +41,7 @@ namespace GameBase.Model
             m_models.CollectionChanged += models_CollectionChanged;
             foreach (var m in models)
             {
-                Add(m);
+                CoreAdd(m);
             }
         }
 
@@ -64,6 +64,7 @@ namespace GameBase.Model
                     }
 
                     break;
+                case NotifyCollectionChangedAction.Move:
                 case NotifyCollectionChangedAction.Replace:
                     for (var i = 0; i < e.OldItems.Count; i++)
                     {
@@ -82,10 +83,17 @@ namespace GameBase.Model
                     m_viewModelToModel.Clear();
                     NotifyCollectionChanged(NotifyCollectionChangedAction.Reset);
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
         protected virtual void Add(TB m)
+        {
+            CoreAdd(m);
+        }
+
+        private void CoreAdd(TB m)
         {
             if (m_modelToViewModel.ContainsKey(m)) return;
             Debug.WriteLine($"Add:{m}");
@@ -124,7 +132,7 @@ namespace GameBase.Model
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        protected virtual void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default(T),
+        protected virtual void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default,
             int idx = -1)
         {
             var args = new NotifyCollectionChangedEventArgs(action, vm, idx);
@@ -137,15 +145,7 @@ namespace GameBase.Model
 
         public IEnumerator<T> GetEnumerator()
         {
-            var viewModels = new List<T>();
-            for (var idx = 0; idx < m_models.Count; idx++)
-            {
-                var m = m_models[idx];
-                if (m_modelToViewModel.ContainsKey(m))
-                {
-                    viewModels.Add(m_modelToViewModel[m]);
-                }
-            }
+            var viewModels = m_models.Where(m => m_modelToViewModel.ContainsKey(m)).Select(m => m_modelToViewModel[m]);
 
             return viewModels.GetEnumerator();
         }
@@ -156,16 +156,9 @@ namespace GameBase.Model
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            var viewModels = new List<T>();
-            foreach (var m in m_models)
-            {
-                if (m_modelToViewModel.ContainsKey(m))
-                {
-                    viewModels.Add(m_modelToViewModel[m]);
-                }
-            }
+            var viewModels = m_models.Where(m => m_modelToViewModel.ContainsKey(m)).Select(m => m_modelToViewModel[m]);
 
-            return ((IEnumerable) viewModels).GetEnumerator();
+            return viewModels.GetEnumerator();
         }
 
         #endregion

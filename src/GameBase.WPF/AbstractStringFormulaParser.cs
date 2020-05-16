@@ -3,110 +3,106 @@ using System.Collections.Generic;
 
 namespace GameBase.WPF
 {
-    public abstract class AbstractStringFormulaParser<T>
+    public abstract class AbstractStringFormulaParser<T> where T:struct
     {
+        private static readonly Operator Nop = new Operator(string.Empty, OperatorType.Nop);
         private readonly Dictionary<string, IEquationProcessor> m_cache = new Dictionary<string, IEquationProcessor>();
-        private readonly AbstractGrammer m_grammer;
+        private readonly Grammar m_grammar;
 
-        protected AbstractStringFormulaParser(AbstractGrammer grammer)
+        protected AbstractStringFormulaParser(Grammar grammar)
         {
-            m_grammer = grammer;
+            m_grammar = grammar;
         }
 
         public bool IsConstant(string token)
         {
-            return m_grammer.IsConstant(token);
+            return m_grammar.IsConstant(token);
         }
 
         public IEquationProcessor BuildProcessor(string formula)
         {
-            if (!m_cache.ContainsKey(formula))
+            if (m_cache.ContainsKey(formula)) return m_cache[formula];
+            var toParse = formula;
+            var values = new Stack<IEquationProcessor>();
+            var operators = new Stack<Operator>();
+            while (toParse.Length > 0)
             {
-                var toParse = formula;
-                var values = new Stack<IEquationProcessor>();
-                var operators = new Stack<Operator>();
-                while (toParse.Length > 0)
+                var idx = toParse.Length;
+                Operator op = Nop;
+                foreach (var o in m_grammar.Operators)
                 {
-                    var idx = toParse.Length;
-                    Operator op = null;
-                    foreach (var o in m_grammer.Operators)
-                    {
-                        var tmp = toParse.IndexOf(o.Symbol);
-                        if (tmp >= 0 && tmp < idx)
-                        {
-                            idx = tmp;
-                            op = o;
-                        }
-                    }
-                    if (op != null)
-                    {
-                        if (idx > 0)
-                        {
-                            values.Push(m_grammer.GetConstantOrVariableProcess(toParse.Substring(0, idx)));
-                        }
-                        ParseOperator(op, operators, values);
-                        toParse = toParse.Substring(idx + op.Symbol.Length);
-                    }
-                    else
-                    {
-                        values.Push(m_grammer.GetConstantOrVariableProcess(toParse));
-                        toParse = string.Empty;
-                    }
+                    var tmp = toParse.IndexOf(o.Symbol, StringComparison.Ordinal);
+                    if (tmp < 0 || tmp >= idx) continue;
+                    idx = tmp;
+                    op = o;
                 }
-                while (operators.Count > 0)
+                if (op != null)
                 {
-                    ImplementOperator(operators.Pop(), values);
-                }
-                if (values.Count > 1)
-                {
-                    throw new FormatException("Formula not parsable.");
-                }
-                m_cache[formula] = values.Pop();
-            }
-            return m_cache[formula];
-        }
-
-        private void ParseOperator(Operator op, Stack<Operator> operatorStack, Stack<IEquationProcessor> valueStack)
-        {
-            if (op != null)
-            {
-                if (op.OperatorType == OperatorType.GroupingClose)
-                {
-                    while (operatorStack.Peek().OperatorType != OperatorType.GroupingOpen)
+                    if (idx > 0)
                     {
-                        ImplementOperator(operatorStack.Pop(), valueStack);
+                        values.Push(m_grammar.GetConstantOrVariableProcess(toParse.Substring(0, idx)));
                     }
-                    operatorStack.Pop();
+                    ParseOperator(op, operators, values);
+                    toParse = toParse.Substring(idx + op.Symbol.Length);
                 }
                 else
                 {
-                    if (op.OperatorType != OperatorType.GroupingOpen)
-                    {
-                        while (operatorStack.Count > 0 && operatorStack.Peek().Precedence > op.Precedence)
-                        {
-                            ImplementOperator(operatorStack.Pop(), valueStack);
-                        }
-                    }
-                    operatorStack.Push(op);
+                    values.Push(m_grammar.GetConstantOrVariableProcess(toParse));
+                    toParse = string.Empty;
                 }
+            }
+            while (operators.Count > 0)
+            {
+                ImplementOperator(operators.Pop(), values);
+            }
+            if (values.Count > 1)
+            {
+                throw new FormatException("Formula not parsable.");
+            }
+            m_cache[formula] = values.Pop();
+            return m_cache[formula];
+        }
+
+        private static void ParseOperator(Operator op, Stack<Operator> operatorStack, Stack<IEquationProcessor> valueStack)
+        {
+            if (op.OperatorType == OperatorType.GroupingClose)
+            {
+                while (operatorStack.Peek().OperatorType != OperatorType.GroupingOpen)
+                {
+                    ImplementOperator(operatorStack.Pop(), valueStack);
+                }
+
+                operatorStack.Pop();
+            }
+            else
+            {
+                if (op.OperatorType != OperatorType.GroupingOpen)
+                {
+                    while (operatorStack.Count > 0 && operatorStack.Peek().Precedence > op.Precedence)
+                    {
+                        ImplementOperator(operatorStack.Pop(), valueStack);
+                    }
+                }
+
+                operatorStack.Push(op);
             }
         }
 
-        private void ImplementOperator(Operator op, Stack<IEquationProcessor> valueStack)
+        private static void ImplementOperator(Operator op, Stack<IEquationProcessor> valueStack)
         {
             var argTypes = new Type[op.ArgumentCount];
             var args = new object[op.ArgumentCount];
             for (var i = 0; i < args.Length; i++)
             {
                 argTypes[i] = typeof(IEquationProcessor);
-                args[(args.Length - 1) - i] = valueStack.Pop();
+                args[args.Length - 1 - i] = valueStack.Pop();
             }
-            valueStack.Push(op.OperatorImplementation.GetConstructor(argTypes).Invoke(args) as IEquationProcessor);
+            valueStack.Push((IEquationProcessor)op.OperatorImplementation.GetConstructor(argTypes).Invoke(args));
         }
 
-        protected abstract class AbstractGrammer
+        protected abstract class Grammar
         {
-            public AbstractGrammer(params Operator[] operators)
+            protected Grammar(params Operator[] operators)
             {
                 Operators = operators;
             }
@@ -122,14 +118,14 @@ namespace GameBase.WPF
 
             public IEquationProcessor GetConstantOrVariableProcess(string token)
             {
-                IEquationProcessor proc = null;
-                proc = GetConstantProcess(token) ?? (IEquationProcessor)new VariableProcess(token);
+                var proc = GetConstantProcess(token) ?? (IEquationProcessor)new VariableProcess(token);
                 return proc;
             }
         }
 
         protected enum OperatorType
         {
+            Nop,
             GroupingOpen,
             GroupingClose,
             Unary,
@@ -139,7 +135,7 @@ namespace GameBase.WPF
         protected class Operator
         {
             public Operator(string symbol, OperatorType operatorType)
-                : this(symbol, operatorType, 0, null)
+                : this(symbol, operatorType, 0, typeof(NoOperator))
             {
             }
 
@@ -154,25 +150,20 @@ namespace GameBase.WPF
             {
                 Symbol = symbol;
                 OperatorType = operatorType;
-                ArgumentCount = 0;
-                if (OperatorType == OperatorType.Binary)
+                ArgumentCount = OperatorType switch
                 {
-                    ArgumentCount = 2;
-                }
-                else if (OperatorType == OperatorType.Unary)
-                {
-                    ArgumentCount = 1;
-                }
+                    OperatorType.Binary => 2,
+                    OperatorType.Unary => 1,
+                    _ => 0
+                };
                 Precedence = precedence;
                 OperatorImplementation = operatorImplementation;
-                if (OperatorType != OperatorType.GroupingOpen && OperatorType != OperatorType.GroupingClose)
+                if (OperatorType == OperatorType.GroupingOpen || OperatorType == OperatorType.GroupingClose) return;
+                if (Precedence < 1) throw new ArgumentException("Precedence must be 1 or higher.");
+                if (operatorImplementation?.IsSubclassOf(typeof(IEquationProcessor))
+                    ?? throw new ArgumentNullException(nameof(operatorImplementation)))
                 {
-                    if (Precedence < 1) throw new ArgumentException("Precedence must be 1 or higher.");
-                    if (operatorImplementation?.IsSubclassOf(typeof(IEquationProcessor))
-                        ?? throw new ArgumentNullException("operatorImplementation"))
-                    {
-                        throw new NullReferenceException("OperatorImplementation must implement IEquationProcessor.");
-                    }
+                    throw new NullReferenceException("OperatorImplementation must implement IEquationProcessor.");
                 }
             }
 
@@ -218,7 +209,7 @@ namespace GameBase.WPF
             }
         }
 
-        protected class VariableProcess : IEquationProcessor
+        private class VariableProcess : IEquationProcessor
         {
             private readonly string m_key;
             public VariableProcess(string key)
@@ -228,11 +219,7 @@ namespace GameBase.WPF
 
             public T Calculate(Dictionary<string, T> values)
             {
-                if (values.ContainsKey(m_key))
-                {
-                    return values[m_key];
-                }
-                return default(T);
+                return values.ContainsKey(m_key) ? values[m_key] : default;
             }
 
             public string ToValueString(Dictionary<string, T> values)
@@ -246,12 +233,19 @@ namespace GameBase.WPF
             }
         }
 
+        private class NoOperator : IEquationProcessor
+        {
+            public T Calculate(Dictionary<string, T> values) => default;
+
+            public string ToValueString(Dictionary<string, T> values) => string.Empty;
+        }
+
         protected abstract class AbstractUnaryOperator : IEquationProcessor
         {
             private readonly IEquationProcessor m_value;
             private readonly string m_symbol;
 
-            public AbstractUnaryOperator(string symbol, IEquationProcessor value)
+            protected AbstractUnaryOperator(string symbol, IEquationProcessor value)
             {
                 m_value = value;
                 m_symbol = symbol;
@@ -275,13 +269,13 @@ namespace GameBase.WPF
             }
         }
 
-        protected abstract class AbstractBinaryOperator : IEquationProcessor
+        protected abstract class BinaryOperator : IEquationProcessor
         {
             private readonly IEquationProcessor m_left;
             private readonly IEquationProcessor m_right;
             private readonly string m_symbol;
 
-            protected AbstractBinaryOperator(string symbol, IEquationProcessor left, IEquationProcessor right)
+            protected BinaryOperator(string symbol, IEquationProcessor left, IEquationProcessor right)
             {
                 m_left = left;
                 m_right = right;

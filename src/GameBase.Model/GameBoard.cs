@@ -1,33 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using GameBase.Model.Rules;
 using System.Drawing;
 using System.Linq;
+using GameBase.Model.Rules;
 
 namespace GameBase.Model
 {
-    public abstract class GameBoard<TP, TM> : IGameBoard<TP, TM> where TP:Piece where TM:Move
+    public abstract class GameBoard<TP, TM> : IGameBoard<TP> where TP:IPiece where TM:Move
     {
         private readonly IPlaceRule<TP,TM> m_placeRule;
         private readonly Point m_minCorner;
         private readonly Point m_maxCorner;
+        private readonly TP m_emptyPiece;
 
-        protected GameBoard(IPlaceRule<TP, TM> placeRule):this(placeRule,
+        protected GameBoard(IPlaceRule<TP, TM> placeRule, TP emptyPiece):this(placeRule,emptyPiece,
             new Point(int.MinValue, int.MinValue),
             new Point(int.MaxValue, int.MaxValue)) { }
 
-        protected GameBoard(IPlaceRule<TP, TM> placeRule, int width, int height):
-            this(placeRule,
+        // ReSharper disable once UnusedMember.Global
+        protected GameBoard(IPlaceRule<TP, TM> placeRule, TP emptyPiece, int width, int height):
+            this(placeRule,emptyPiece,
             new Point(0, 0),
             new Point(width -1, height-1))
         { }
 
-        private GameBoard(IPlaceRule<TP, TM> placeRule, Point minCorner, Point maxCorner)
+        private GameBoard(IPlaceRule<TP, TM> placeRule, TP emptyPiece, Point minCorner, Point maxCorner)
         {
             MinXChanged += (sender, args) => { };
             MinYChanged += (sender, args) => { };
             MaxXChanged += (sender, args) => { };
             MaxYChanged += (sender, args) => { };
+            m_emptyPiece = emptyPiece;
             m_placeRule = placeRule;
             m_minCorner = minCorner;
             m_maxCorner = maxCorner;
@@ -40,7 +43,7 @@ namespace GameBase.Model
 
         public IEnumerable<TM> GetAvailableMoves(TP piece)
         {
-            return piece == GetEmptyPiece()
+            return piece.Equals(m_emptyPiece)
                 ? Enumerable.Empty<TM>()
                 : AvailableLocations.SelectMany(GetOptions)
                     .Where(m => m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m));
@@ -118,16 +121,14 @@ namespace GameBase.Model
                     {
                         return p.Piece;
                     }
-                    if (cmpX > 0 || (cmpX == 0 && cmpY > 0))
+                    if (cmpX > 0 || cmpX == 0 && cmpY > 0)
                     {
                         break;
                     }
                 }
-                return GetEmptyPiece();
+                return m_emptyPiece;
             }
         }
-
-        protected abstract TP GetEmptyPiece();
 
         /// <summary>
         /// Add available locations based on the given placement
@@ -138,6 +139,7 @@ namespace GameBase.Model
 
         }
 
+        // ReSharper disable once UnusedMethodReturnValue.Global
         public bool Add(Placement<TP, TM> placement)
         {
             return Add(placement, true);
@@ -177,11 +179,10 @@ namespace GameBase.Model
                     Placements.Insert(i, placement);
                     break;
                 }
-                else if (comp < 0)
-                {
-                    Placements.Insert(i, placement);
-                    break;
-                }
+
+                if (comp >= 0) continue;
+                Placements.Insert(i, placement);
+                break;
             }
             if (i == Placements.Count)
             {

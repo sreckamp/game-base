@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
-using System.Windows.Controls;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using DPoint = System.Drawing.Point;
@@ -106,7 +106,7 @@ namespace GameBase.WPF
                 }
                 while (ColumnDefinitions.Count < value)
                 {
-                    ColumnDefinitions.Add(new ColumnDefinition() { Width = m_columnWidth });
+                    ColumnDefinitions.Add(new ColumnDefinition { Width = m_columnWidth });
                 }
                 Debug.WriteLine($"After Count = {ColumnDefinitions.Count}");
                 SetValue(ColumnsProperty, value);
@@ -181,7 +181,7 @@ namespace GameBase.WPF
                 }
                 while (RowDefinitions.Count < value)
                 {
-                    RowDefinitions.Add(new RowDefinition() { Height = m_rowHeight });
+                    RowDefinitions.Add(new RowDefinition { Height = m_rowHeight });
                 }
                 Debug.WriteLine($"After Count = {RowDefinitions.Count}");
                 SetValue(RowsProperty, value);

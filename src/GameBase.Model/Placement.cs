@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace GameBase.Model
 {
-    public class Placement<TP, TM> : IComparable, IComparable<Placement<TP, TM>> where TP : Piece where TM : Move
+    public class Placement<TP, TM> : IComparable, IComparable<Placement<TP, TM>> where TP : IPiece where TM : Move
     {
         public Placement(TP piece, TM move)
         {
@@ -18,7 +18,8 @@ namespace GameBase.Model
 
         public int CompareTo(object obj)
         {
-            return CompareTo(obj as Placement<TP, TM>);
+            if (!(obj is Placement<TP, TM> plc)) return -1;
+            return CompareTo(plc);
         }
 
         #endregion

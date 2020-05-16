@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Windows;
 using GameBase.Model;
 
 namespace GameBase.WPF.ViewModel
@@ -22,13 +23,13 @@ namespace GameBase.WPF.ViewModel
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (System.Windows.Application.Current.Dispatcher?.CheckAccess() ?? true)
+            if (Application.Current.Dispatcher?.CheckAccess() ?? true)
             {
                 CollectionChanged?.Invoke(this, e);
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>( OnCollectionChanged), sender, e);
+                Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>( OnCollectionChanged), sender, e);
             }
         }
 
@@ -49,10 +50,8 @@ namespace GameBase.WPF.ViewModel
                 {
                     return idx + l.IndexOf(item);
                 }
-                else
-                {
-                    idx += l.Count;
-                }
+
+                idx += l.Count;
             }
             return -1;
         }
@@ -78,10 +77,8 @@ namespace GameBase.WPF.ViewModel
                     {
                         return l[index - idx];
                     }
-                    else
-                    {
-                        idx += l.Count;
-                    }
+
+                    idx += l.Count;
                 }
                 throw new IndexOutOfRangeException();
             }
@@ -165,7 +162,7 @@ namespace GameBase.WPF.ViewModel
         public class OverlayListEnumerator : IEnumerator<T>
         {
             private readonly List<IList<T>> m_lists = new List<IList<T>>();
-            private IEnumerator<IEnumerator<T>> m_active = null;
+            private IEnumerator<IEnumerator<T>> m_active;
 
             public OverlayListEnumerator(params IList<T>[] lists)
             {
@@ -199,7 +196,7 @@ namespace GameBase.WPF.ViewModel
             }
 
             #region IDisposable Support
-            private bool m_disposedValue = false; // To detect redundant calls
+            private bool m_disposedValue; // To detect redundant calls
 
             protected virtual void Dispose(bool disposing)
             {
