@@ -139,7 +139,7 @@
 //        // Evaluates a mathematical string and keeps track of the results in a List<double> of numbers
 //        private void evaluateMathString(ref string mathEquation, ref List<double> numbers, int index)
 //        {
-//            // Loop through each mathemtaical token in the equation
+//            // Loop through each mathematical token in the equation
 //            string token = GetNextToken(mathEquation);
 
 //            while (token != string.Empty)
@@ -294,7 +294,7 @@
 //            // Evaluates a mathematical string and keeps track of the results in a List<double> of numbers
 //            private void EvaluateMathString(ref string mathEquation, ref List<double> numbers, int index)
 //            {
-//                // Loop through each mathemtaical token in the equation
+//                // Loop through each mathematical token in the equation
 //                string token = GetNextToken(mathEquation);
 
 //                while (token != string.Empty)

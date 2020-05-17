@@ -8,13 +8,13 @@
 //{
 //    public class IntegerStringFormulaParser : AbstractStringFormulaParser<int>
 //    {
-//        public IntegerStringFormulaParser() : base(s_integerGrammer) { }
+//        public IntegerStringFormulaParser() : base(s_integerGrammar) { }
 
-//        private static readonly IntegerGrammer s_integerGrammer = new IntegerGrammer();
+//        private static readonly IntegerGrammar s_integerGrammar = new IntegerGrammar();
 
-//        private class IntegerGrammer : AbstractGrammer
+//        private class IntegerGrammar : AbstractGrammar
 //        {
-//            public IntegerGrammer()
+//            public IntegerGrammar()
 //                : base
 //                    (
 //                         new Operator("(", OperatorType.GroupingOpen)

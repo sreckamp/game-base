@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace GameBase.WPF
 {
+    [SuppressMessage("ReSharper", "BuiltInTypeReferenceStyle")]
     public class MathStringFormulaParser<T> : AbstractStringFormulaParser<T> where T:struct
     {
         public MathStringFormulaParser() : base(SGrammar)
@@ -104,6 +106,7 @@ namespace GameBase.WPF
             }
         }
 
+        // ReSharper disable once UnusedType.Local
         private class ModuloProcess : BinaryOperator
         {
             public ModuloProcess(IEquationProcessor left, IEquationProcessor right)

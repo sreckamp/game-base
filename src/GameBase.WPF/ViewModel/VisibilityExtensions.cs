@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 
 namespace GameBase.WPF.ViewModel
 {
@@ -6,75 +7,31 @@ namespace GameBase.WPF.ViewModel
     {
         public static Visibility Or(this Visibility vis, params Visibility[] others)
         {
-            if (vis == Visibility.Visible)
-            {
-                return vis;
-            }
-            foreach (var v in others)
-            {
-                if (v == Visibility.Visible)
-                {
-                    return v;
-                }
-            }
-            return Visibility.Hidden;
+            return vis == Visibility.Visible || others.Any(b => b == Visibility.Visible)
+                ? Visibility.Visible
+                : Visibility.Hidden;
         }
 
-        public static Visibility Or(this Visibility vis, params bool[] bools)
+        public static Visibility Or(this Visibility vis, params bool[] booleans)
         {
-            if (vis == Visibility.Visible)
-            {
-                return vis;
-            }
-            foreach (var b in bools)
-            {
-                if (b)
-                {
-                    return Visibility.Visible;
-                }
-            }
-            return Visibility.Hidden;
+            return vis == Visibility.Visible || booleans.Any(b => b) ? Visibility.Visible : Visibility.Hidden;
         }
 
         public static Visibility And(this Visibility vis, params Visibility[] others)
         {
-            if (vis == Visibility.Hidden)
-            {
-                return vis;
-            }
-            foreach (var v in others)
-            {
-                if (v == Visibility.Hidden)
-                {
-                    return v;
-                }
-            }
-            return Visibility.Visible;
+            return vis == Visibility.Hidden || others.Any(b => b == Visibility.Hidden)
+                ? Visibility.Hidden
+                : Visibility.Visible;
         }
 
-        public static Visibility And(this Visibility vis, params bool[] bools)
+        public static Visibility And(this Visibility vis, params bool[] booleans)
         {
-            if (vis == Visibility.Hidden)
-            {
-                return vis;
-            }
-            foreach (var b in bools)
-            {
-                if (!b)
-                {
-                    return Visibility.Hidden;
-                }
-            }
-            return Visibility.Visible;
+            return vis == Visibility.Hidden || booleans.Any(b => !b) ? Visibility.Hidden : Visibility.Visible;
         }
 
         public static Visibility Not(this Visibility vis)
         {
-            if (vis != Visibility.Visible)
-            {
-                return Visibility.Visible;
-            }
-            return Visibility.Hidden;
+            return vis != Visibility.Visible ? Visibility.Visible : Visibility.Hidden;
         }
     }
 }

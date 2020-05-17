@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Data;
@@ -15,32 +18,9 @@ namespace GameBase.WPF
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            var result = false;
-            var value = values[0];
-            var e = values[1] as IEnumerable;
-            foreach (var o in e)
-            {
-                if (o.Equals(value))
-                {
-                    result = true;
-                    break;
-                }
-            }
-            if (result)
-            {
-                if (values.Length > 2)
-                {
-                    return values[2];
-                }
-            }
-            else
-            {
-                if (values.Length > 3)
-                {
-                    return values[3];
-                }
-            }
-            return DependencyProperty.UnsetValue;
+            return (values[1] is IEnumerable e) && e.Cast<object>().Contains(values[0])
+                ? (values.Length > 2 ? values[2] : DependencyProperty.UnsetValue)
+                : (values.Length > 3 ? values[3] : DependencyProperty.UnsetValue);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -70,7 +50,7 @@ namespace GameBase.WPF
                 foreach (var val in enumerable)
                 {
                     if (comma) sb.Append(',');
-                    sb.Append(value?.ToString() ?? "null");
+                    sb.Append(val);
                     comma = true;
                 }
             }
@@ -119,27 +99,9 @@ namespace GameBase.WPF
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            var result = false;
-            if (values[0] is bool bv && bv
-                || values[0] != null && values[0] != DependencyProperty.UnsetValue)
-            {
-                result = true;
-            }
-            if (result)
-            {
-                if (values.Length > 1)
-                {
-                    return values[1];
-                }
-            }
-            else
-            {
-                if (values.Length > 2)
-                {
-                    return values[2];
-                }
-            }
-            return DependencyProperty.UnsetValue;
+            return values[0] is bool bv && bv || values[0] != DependencyProperty.UnsetValue
+                ? (values.Length > 1 ? values[1] : DependencyProperty.UnsetValue)
+                : (values.Length > 2 ? values[2] : DependencyProperty.UnsetValue);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -162,23 +124,14 @@ namespace GameBase.WPF
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             var foundNull = false;
-            for (var i = 0; i < values.Length;i++ )
+            foreach (var t in values)
             {
-                if (values[i] != DependencyProperty.UnsetValue)
-                {
-                    if (values[i] != null)
-                    {
-                        return values[i];
-                    }
+                if (t == DependencyProperty.UnsetValue) continue;
+                if (t != null) return t;
+                foundNull = true;
+            }
 
-                    foundNull = true;
-                }
-            }
-            if (foundNull)
-            {
-                return null;
-            }
-            return DependencyProperty.UnsetValue;
+            return foundNull ? null : DependencyProperty.UnsetValue;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -196,7 +149,7 @@ namespace GameBase.WPF
 
     /// <summary>
     /// Process formula of the format var1,var2:var1||var2
-    /// Also processes var1,var2:var1&&var2?true:false
+    /// Also processes var1,var2:var1&amp;&amp;var2?true:false
     /// </summary>
     public class BooleanFormulaConverter : AbstractFormulaConverter<bool>
     {
@@ -320,6 +273,7 @@ namespace GameBase.WPF
         }
     }
 
+    [SuppressMessage("ReSharper", "BuiltInTypeReferenceStyle")]
     public class IntegerFormulaConverter : AbstractFormulaConverter<int>
     {
         private static readonly MathStringFormulaParser<int> SParser = new MathStringFormulaParser<int>();

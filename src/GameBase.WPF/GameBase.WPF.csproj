@@ -58,7 +58,7 @@
     <Compile Include="StandardConverters.cs" />
     <Compile Include="AbstractStringFormulaParser.cs" />
     <Compile Include="ViewModel\AbstractPlacementViewModel.cs" />
-    <Compile Include="ViewModel\OverlayDispatchableObservableList.cs" />
+    <Compile Include="ViewModel\OverlayDispatchedObservableList.cs" />
     <Compile Include="ViewModel\DispatchedObservableList.cs" />
     <Compile Include="ViewModel\DispatchedMappingCollection.cs" />
     <Compile Include="ViewModel\VisibilityExtensions.cs" />

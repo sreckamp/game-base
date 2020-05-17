@@ -10,7 +10,7 @@ namespace GameBase.WPF
 
         private class BooleanGrammar : Grammar
         {
-            private Dictionary<string, ConstantProcess> m_constants =
+            private readonly Dictionary<string, ConstantProcess> m_constants =
                 new Dictionary<string, ConstantProcess>();
 
             public BooleanGrammar()
