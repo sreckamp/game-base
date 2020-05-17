@@ -2,10 +2,9 @@
 
 namespace GameBase.Model
 {
-    public interface IGameBoard<out TP> where TP : IPiece
+    public interface IGameBoard<out TP>
     {
         TP this[Point location] { get; }
         bool IsEmpty { get; }
-        // ObservableList<Point> AvailableLocations { get; }
     }
 }

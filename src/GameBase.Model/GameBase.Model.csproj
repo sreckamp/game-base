@@ -48,6 +48,7 @@
     <Compile Include="GameResult.cs" />
     <Compile Include="IGameBoard.cs" />
     <Compile Include="GameBoard.cs" />
+    <Compile Include="ILocation.cs" />
     <Compile Include="MappingCollection.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="ObservableList.cs" />

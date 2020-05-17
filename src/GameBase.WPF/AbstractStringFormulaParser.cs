@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace GameBase.WPF
 {
-    public abstract class AbstractStringFormulaParser<T> where T:struct
+    public abstract class StringFormulaParser<T> where T:struct
     {
-        private static readonly Operator Nop = new Operator(string.Empty, OperatorType.Nop);
+        private static readonly Operator SNop = new Operator(string.Empty, OperatorType.Unary);
         private readonly Dictionary<string, IEquationProcessor> m_cache = new Dictionary<string, IEquationProcessor>();
         private readonly Grammar m_grammar;
 
-        protected AbstractStringFormulaParser(Grammar grammar)
+        protected StringFormulaParser(Grammar grammar)
         {
             m_grammar = grammar;
         }
@@ -28,7 +28,7 @@ namespace GameBase.WPF
             while (toParse.Length > 0)
             {
                 var idx = toParse.Length;
-                var op = Nop;
+                var op = SNop;
                 foreach (var o in m_grammar.Operators)
                 {
                     var tmp = toParse.IndexOf(o.Symbol, StringComparison.Ordinal);
@@ -36,7 +36,7 @@ namespace GameBase.WPF
                     idx = tmp;
                     op = o;
                 }
-                if (op != null)
+                // if (op != null)
                 {
                     if (idx > 0)
                     {
@@ -45,11 +45,11 @@ namespace GameBase.WPF
                     ParseOperator(op, operators, values);
                     toParse = toParse.Substring(idx + op.Symbol.Length);
                 }
-                else
-                {
-                    values.Push(m_grammar.GetConstantOrVariableProcess(toParse));
-                    toParse = string.Empty;
-                }
+                // else
+                // {
+                //     values.Push(m_grammar.GetConstantOrVariableProcess(toParse));
+                //     toParse = string.Empty;
+                // }
             }
             while (operators.Count > 0)
             {
@@ -125,7 +125,6 @@ namespace GameBase.WPF
 
         protected enum OperatorType
         {
-            Nop,
             GroupingOpen,
             GroupingClose,
             Unary,
@@ -135,7 +134,7 @@ namespace GameBase.WPF
         protected class Operator
         {
             public Operator(string symbol, OperatorType operatorType)
-                : this(symbol, operatorType, 0, typeof(NoOperator))
+                : this(symbol, operatorType, 1, typeof(NoOperator))
             {
             }
 
@@ -233,19 +232,20 @@ namespace GameBase.WPF
             }
         }
 
-        private class NoOperator : IEquationProcessor
+        private class NoOperator : UnaryOperator
         {
-            public T Calculate(Dictionary<string, T> values) => default;
+            public NoOperator(IEquationProcessor value)
+                : base(string.Empty, value) { }
 
-            public string ToValueString(Dictionary<string, T> values) => string.Empty;
+            protected override T Execute(T value) => value;
         }
 
-        protected abstract class AbstractUnaryOperator : IEquationProcessor
+        protected abstract class UnaryOperator : IEquationProcessor
         {
             private readonly IEquationProcessor m_value;
             private readonly string m_symbol;
 
-            protected AbstractUnaryOperator(string symbol, IEquationProcessor value)
+            protected UnaryOperator(string symbol, IEquationProcessor value)
             {
                 m_value = value;
                 m_symbol = symbol;

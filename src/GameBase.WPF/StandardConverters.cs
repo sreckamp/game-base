@@ -382,9 +382,9 @@ namespace GameBase.WPF
     /// <typeparam name="T"></typeparam>
     public abstract class AbstractFormulaConverter<T> : MarkupExtension, IMultiValueConverter where T:struct
     {
-        private readonly AbstractStringFormulaParser<T> m_parser;
+        private readonly StringFormulaParser<T> m_parser;
 
-        protected AbstractFormulaConverter(AbstractStringFormulaParser<T> parser)
+        protected AbstractFormulaConverter(StringFormulaParser<T> parser)
         {
             m_parser = parser;
         }

@@ -3,61 +3,43 @@ using System.Drawing;
 
 namespace GameBase.Model
 {
-    public class Placement<TP, TM> : IComparable, IComparable<Placement<TP, TM>> where TP : IPiece where TM : Move
+    public class Placement<T> : IComparable, IComparable<Placement<T>>
     {
-        public Placement(TP piece, TM move)
+        public Placement(T piece, Point location)
         {
             Piece = piece;
-            Move = move;
+            Location = location;
         }
 
-        public TP Piece { get; }
-        public TM Move { get; }
+        public T Piece { get; set; }
+        public Point Location { get; set; }
 
         #region IComparable Members
 
         public int CompareTo(object obj)
         {
-            if (!(obj is Placement<TP, TM> plc)) return -1;
+            if (!(obj is Placement<T> plc)) return -1;
             return CompareTo(plc);
         }
 
         #endregion
 
-        #region IComparable<Placement<P,M>> Members
+        #region IComparable<Placement<T>> Members
 
-        public int CompareTo(Placement<TP,TM> other)
+        public int CompareTo(Placement<T> other)
         {
-            if (other == null)
-            {
-                return 1;
-            }
-            if (Move != null)
-            {
-                if (other.Move == null)
-                {
-                    return 1;
-                }
-                return Move.Location.X == other.Move.Location.X ? Move.Location.Y.CompareTo(other.Move.Location.Y) : Move.Location.X.CompareTo(other.Move.Location.X);
-            }
-
-            if (other.Move == null)
-            {
-                return 0;
-            }
-
-            return -1;
+            return Location.X == other.Location.X ? Location.Y.CompareTo(other.Location.Y) : Location.X.CompareTo(other.Location.X);
         }
 
         #endregion
-        public static implicit operator Point(Placement<TP,TM> p)
+        public static implicit operator Point(Placement<T> p)
         {
-            return p?.Move?.Location ?? new Point();
+            return p.Location;
         }
 
         public override string ToString()
         {
-            return Piece + "@" + Move;
+            return Piece + "@" + Location;
         }
     }
 }

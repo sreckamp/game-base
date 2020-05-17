@@ -6,7 +6,7 @@ using System.Globalization;
 namespace GameBase.WPF
 {
     [SuppressMessage("ReSharper", "BuiltInTypeReferenceStyle")]
-    public class MathStringFormulaParser<T> : AbstractStringFormulaParser<T> where T:struct
+    public class MathStringFormulaParser<T> : StringFormulaParser<T> where T:struct
     {
         public MathStringFormulaParser() : base(SGrammar)
         {

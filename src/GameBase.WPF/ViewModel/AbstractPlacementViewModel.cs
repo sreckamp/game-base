@@ -1,35 +1,37 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Windows;
 using GameBase.Model;
 using DPoint = System.Drawing.Point;
 
 namespace GameBase.WPF.ViewModel
 {
-    public abstract class AbstractPlacementViewModel<TP,TM> : INotifyPropertyChanged where TP:IPiece where TM:Move
+    public abstract class PlacementViewModel<T> : INotifyPropertyChanged
     {
-        protected readonly Placement<TP, TM> Placement;
+        protected readonly Placement<T> Placement;
         protected readonly IGridManager GridManager;
 
-        protected AbstractPlacementViewModel(Placement<TP, TM> placement, IGridManager gridManager = null)
+        protected PlacementViewModel(Placement<T> placement, IGridManager gridManager = null)
         {
             PropertyChanged += (sender, args) => { };
             Placement = placement;
             GridManager = gridManager ?? DefaultGridManager.Instance;
             GridManager.StartColumnChanged += OnStartColumnChanged;
             GridManager.StartRowChanged += OnStartRowChanged;
-            m_move = GetEmptyMove();
+            // m_move = GetEmptyMove();
         }
 
-        private TM m_move;
-        public TM Move => Placement.Move;
+        // private TM m_move;
+        public DPoint Location => Placement.Location;
+        public T Piece => Placement.Piece;
 
-        protected abstract TM GetMove(int locationX, int locationY);
-        protected abstract TM GetEmptyMove();
+        // protected abstract TM GetMove(int locationX, int locationY);
+        // protected abstract TM GetEmptyMove();
 
         public virtual void SetCell(DPoint cell)
         {
-            m_move = GetMove(cell.X + GridManager.StartColumn, cell.Y + GridManager.StartRow);
+            Placement.Location = new DPoint(cell.X + GridManager.StartColumn, cell.Y + GridManager.StartRow);
             NotifyPropertyChanged(nameof(Row));
             NotifyPropertyChanged(nameof(Column));
             NotifyPropertyChanged(nameof(IsOnGrid));
@@ -47,11 +49,11 @@ namespace GameBase.WPF.ViewModel
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
 
-        public bool IsOnGrid => !Move.IsEmpty
-                                && Column >= 0 && Column < GridManager.Columns
+        public bool IsOnGrid => //!Move.IsEmpty &&
+                                Column >= 0 && Column < GridManager.Columns
                                 && Row >= 0 && Row < GridManager.Rows;
-        public int Column => Move.Location.X - GridManager.StartColumn;
-        public int Row => Move.Location.Y - GridManager.StartRow;
+        public int Column => Location.X - GridManager.StartColumn;
+        public int Row => Location.Y - GridManager.StartRow;
 
         #region INotifyPropertyChanged Members
 

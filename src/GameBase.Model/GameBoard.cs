@@ -6,52 +6,49 @@ using GameBase.Model.Rules;
 
 namespace GameBase.Model
 {
-    public abstract class GameBoard<TP, TM> : IGameBoard<TP> where TP:IPiece where TM:Move
+    public abstract class GameBoard<T> : IGameBoard<T>
     {
-        private readonly IPlaceRule<TP,TM> m_placeRule;
+        // private readonly IPlaceRule<T> m_placeRule;
         private readonly Point m_minCorner;
         private readonly Point m_maxCorner;
-        private readonly TP m_emptyPiece;
-
-        protected GameBoard(IPlaceRule<TP, TM> placeRule, TP emptyPiece):this(placeRule,emptyPiece,
-            new Point(int.MinValue, int.MinValue),
-            new Point(int.MaxValue, int.MaxValue)) { }
+        private readonly T m_emptyPiece;
 
         // ReSharper disable once UnusedMember.Global
-        protected GameBoard(IPlaceRule<TP, TM> placeRule, TP emptyPiece, int width, int height):
-            this(placeRule,emptyPiece,
-            new Point(0, 0),
-            new Point(width -1, height-1))
+        protected GameBoard(/*IPlaceRule<T> placeRule, */T emptyPiece, int width = 0, int height = 0):
+            this(//placeRule,
+                emptyPiece,
+                new Point(width == 0 ? int.MinValue : 0, height == 0 ? int.MinValue : 0),
+                new Point(width == 0 ? int.MaxValue : width -1, height == 0 ? int.MaxValue : height-1))
         { }
 
-        private GameBoard(IPlaceRule<TP, TM> placeRule, TP emptyPiece, Point minCorner, Point maxCorner)
+        private GameBoard(/*IPlaceRule<T> placeRule, */T emptyPiece, Point minCorner, Point maxCorner)
         {
             MinXChanged += (sender, args) => { };
             MinYChanged += (sender, args) => { };
             MaxXChanged += (sender, args) => { };
             MaxYChanged += (sender, args) => { };
             m_emptyPiece = emptyPiece;
-            m_placeRule = placeRule;
+            // m_placeRule = placeRule;
             m_minCorner = minCorner;
             m_maxCorner = maxCorner;
-            AvailableLocations = new ObservableList<Point>();
-            Placements = new ObservableList<Placement<TP, TM>>();
+            // AvailableLocations = new ObservableList<Point>();
+            Placements = new ObservableList<Placement<T>>();
         }
 
-        public ObservableList<Point> AvailableLocations { get; }
-        public ObservableList<Placement<TP,TM>> Placements { get; }
+        // public ObservableList<Point> AvailableLocations { get; }
+        public ObservableList<Placement<T>> Placements { get; }
 
-        public IEnumerable<TM> GetAvailableMoves(TP piece)
-        {
-            return piece.Equals(m_emptyPiece)
-                ? Enumerable.Empty<TM>()
-                : AvailableLocations.SelectMany(GetOptions)
-                    .Where(m => m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m));
-        }
+        // public IEnumerable<Point> GetAvailableMoves(T piece)
+        // {
+        //     return piece.Equals(m_emptyPiece)
+        //         ? Enumerable.Empty<Point>()
+        //         : AvailableLocations.SelectMany(GetOpenLocations)
+        //             .Where(m => m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m));
+        // }
 
-        protected virtual IEnumerable<TM> GetOptions(Point point)
+        protected virtual IEnumerable<Point> GetOpenLocations(Point point)
         {
-            return Enumerable.Empty<TM>();
+            return Enumerable.Empty<Point>();
         }
 
         public event EventHandler<ChangedValueArgs<int>> MinXChanged;
@@ -106,17 +103,16 @@ namespace GameBase.Model
             }
         }
 
-        protected TP this[int col, int row] => this[new Point(col, row)];
+        protected T this[int col, int row] => this[new Point(col, row)];
 
-        public TP this[Point pnt]
+        public T this[Point pnt]
         {
             get
             {
                 foreach (var p in Placements)
                 {
-                    if (p.Move.IsEmpty) continue;
-                    var cmpX = p.Move.Location.X.CompareTo(pnt.X);
-                    var cmpY = p.Move.Location.Y.CompareTo(pnt.Y);
+                    var cmpX = p.Location.X.CompareTo(pnt.X);
+                    var cmpY = p.Location.Y.CompareTo(pnt.Y);
                     if (cmpX == 0 && cmpY == 0)
                     {
                         return p.Piece;
@@ -130,51 +126,53 @@ namespace GameBase.Model
             }
         }
 
-        /// <summary>
-        /// Add available locations based on the given placement
-        /// </summary>
-        /// <param name="placement">The newly added placement</param>
-        protected virtual void AddAvailableLocations(Placement<TP, TM> placement)
-        {
-
-        }
+        // /// <summary>
+        // /// Add available locations based on the given placement
+        // /// </summary>
+        // /// <param name="placement">The newly added placement</param>
+        // protected virtual void AddAvailableLocations(Placement<T> placement)
+        // {
+        //
+        // }
 
         // ReSharper disable once UnusedMethodReturnValue.Global
-        public bool Add(Placement<TP, TM> placement)
+        public bool Add(Placement<T> placement)
         {
             return Add(placement, true);
         }
 
-        private bool Add(Placement<TP,TM> placement, bool mustBeAvailable)
+        private bool Add(Placement<T> placement, bool mustBeAvailable)
         {
-            if (placement.Move.Location.X < m_minCorner.X
-                || placement.Move.Location.Y < m_minCorner.Y
-                || placement.Move.Location.X > m_maxCorner.X
-                || placement.Move.Location.Y > m_maxCorner.Y)
+            if (placement.Location.X < m_minCorner.X
+                || placement.Location.Y < m_minCorner.Y
+                || placement.Location.X > m_maxCorner.X
+                || placement.Location.Y > m_maxCorner.Y)
             {
                 throw new IndexOutOfRangeException();
             }
 
-            if (!AvailableLocations.Contains(placement.Move))
-            {
-                if (mustBeAvailable)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                AvailableLocations.Remove(placement.Move);
-            }
-            var col = placement.Move.Location.X;
-            var row = placement.Move.Location.Y;
-            AddAvailableLocations(placement);
+            
+            // if (!AvailableLocations.Contains(placement.Location))
+            // {
+            //     if (mustBeAvailable)
+            //     {
+            //         return false;
+            //     }
+            // }
+            // else
+            // {
+            //     AvailableLocations.Remove(placement.Location);
+            // }
+            var col = placement.Location.X;
+            var row = placement.Location.Y;
+            // AddAvailableLocations(placement);
             var i = 0;
             for (; i < Placements.Count; i++)
             {
                 var comp = placement.CompareTo(Placements[i]);
                 if (comp == 0)
                 {
+                    if (mustBeAvailable) return false;
                     Placements.RemoveAt(i);
                     Placements.Insert(i, placement);
                     break;
@@ -212,7 +210,7 @@ namespace GameBase.Model
         public virtual void Clear()
         {
             MaxX = MinX = MaxY = MinY = 0;
-            AvailableLocations.Clear();
+            // AvailableLocations.Clear();
             Placements.Clear();
         }
     }

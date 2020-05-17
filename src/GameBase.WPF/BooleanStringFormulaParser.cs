@@ -2,7 +2,7 @@
 
 namespace GameBase.WPF
 {
-    public class BooleanStringFormulaParser : AbstractStringFormulaParser<bool>
+    public class BooleanStringFormulaParser : StringFormulaParser<bool>
     {
         public BooleanStringFormulaParser() : base(SGrammar) { }
 
@@ -77,7 +77,7 @@ namespace GameBase.WPF
             }
         }
 
-        private class NotProcess : AbstractUnaryOperator
+        private class NotProcess : UnaryOperator
         {
             public NotProcess(IEquationProcessor value)
                 : base("!", value)
