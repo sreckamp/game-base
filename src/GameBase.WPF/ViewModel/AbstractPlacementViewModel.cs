@@ -22,7 +22,7 @@ namespace GameBase.WPF.ViewModel
         }
 
         private TM m_move;
-        public TM Move => Placement.Move ?? m_move;
+        public TM Move => Placement.Move;
 
         protected abstract TM GetMove(int locationX, int locationY);
         protected abstract TM GetEmptyMove();
@@ -47,7 +47,7 @@ namespace GameBase.WPF.ViewModel
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
 
-        public bool IsOnGrid => !Move.IsEmpty 
+        public bool IsOnGrid => !Move.IsEmpty
                                 && Column >= 0 && Column < GridManager.Columns
                                 && Row >= 0 && Row < GridManager.Rows;
         public int Column => Move.Location.X - GridManager.StartColumn;

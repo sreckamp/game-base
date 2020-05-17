@@ -107,7 +107,7 @@ namespace GameBase.Model
         }
 
         protected TP this[int col, int row] => this[new Point(col, row)];
- 
+
         public TP this[Point pnt]
         {
             get

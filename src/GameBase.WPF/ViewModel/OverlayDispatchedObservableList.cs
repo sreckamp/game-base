@@ -7,17 +7,18 @@ using GameBase.Model;
 
 namespace GameBase.WPF.ViewModel
 {
-    public class OverlayDispatchableObservableList<T> : INotifyCollectionChanged, IList<T>
+    public class OverlayDispatchedObservableList<T> : INotifyCollectionChanged, IList<T> where T : notnull
     {
         private readonly IObservableList<T>[] m_lists;
 
-        public OverlayDispatchableObservableList(params IObservableList<T>[] lists)
+        public OverlayDispatchedObservableList(params IObservableList<T>[] lists)
         {
             m_lists = lists;
-            foreach(var list in lists)
+            foreach (var list in lists)
             {
                 list.CollectionChanged += OnCollectionChanged;
             }
+
             CollectionChanged += (sender, args) => { };
         }
 
@@ -29,7 +30,8 @@ namespace GameBase.WPF.ViewModel
             }
             else
             {
-                Application.Current.Dispatcher.Invoke(new Action<object, NotifyCollectionChangedEventArgs>( OnCollectionChanged), sender, e);
+                Application.Current.Dispatcher.Invoke(
+                    new Action<object, NotifyCollectionChangedEventArgs>(OnCollectionChanged), sender, e);
             }
         }
 
@@ -44,15 +46,16 @@ namespace GameBase.WPF.ViewModel
         public int IndexOf(T item)
         {
             var idx = 0;
-            foreach(var l in m_lists)
+            foreach (var l in m_lists)
             {
-                if(l.Contains(item))
+                if (l.Contains(item))
                 {
                     return idx + l.IndexOf(item);
                 }
 
                 idx += l.Count;
             }
+
             return -1;
         }
 
@@ -80,6 +83,7 @@ namespace GameBase.WPF.ViewModel
 
                     idx += l.Count;
                 }
+
                 throw new IndexOutOfRangeException();
             }
             set => throw new NotSupportedException();
@@ -108,6 +112,7 @@ namespace GameBase.WPF.ViewModel
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -123,12 +128,14 @@ namespace GameBase.WPF.ViewModel
 
         public int Count
         {
-            get {
+            get
+            {
                 var count = 0;
                 foreach (var l in m_lists)
                 {
                     count += l.Count;
                 }
+
                 return count;
             }
         }
@@ -157,18 +164,20 @@ namespace GameBase.WPF.ViewModel
         {
             return new OverlayListEnumerator(m_lists);
         }
+
         #endregion
 
         public class OverlayListEnumerator : IEnumerator<T>
         {
-            private readonly List<IList<T>> m_lists = new List<IList<T>>();
+            private readonly List<IObservableList<T>> m_lists = new List<IObservableList<T>>();
             private IEnumerator<IEnumerator<T>> m_active;
 
-            public OverlayListEnumerator(params IList<T>[] lists)
+            public OverlayListEnumerator(params IObservableList<T>[] lists)
             {
                 m_lists.AddRange(lists);
                 Reset();
             }
+
             public T Current => m_active.Current.Current;
 
             object IEnumerator.Current => Current;
@@ -182,6 +191,7 @@ namespace GameBase.WPF.ViewModel
                         return false;
                     }
                 }
+
                 return true;
             }
 
@@ -192,10 +202,12 @@ namespace GameBase.WPF.ViewModel
                 {
                     enums.Add(l.GetEnumerator());
                 }
+
                 m_active = enums.GetEnumerator();
             }
 
             #region IDisposable Support
+
             private bool m_disposedValue; // To detect redundant calls
 
             protected virtual void Dispose(bool disposing)
@@ -228,6 +240,7 @@ namespace GameBase.WPF.ViewModel
                 // TODO: uncomment the following line if the finalizer is overridden above.
                 // GC.SuppressFinalize(this);
             }
+
             #endregion
 
         }

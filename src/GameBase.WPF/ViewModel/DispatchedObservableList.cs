@@ -11,7 +11,7 @@ namespace GameBase.WPF.ViewModel
     {
         private readonly IObservableList<T> m_list;
 
-        public DispatchedObservableList(IObservableList<T> list) 
+        public DispatchedObservableList(IObservableList<T> list)
         {
             m_list = list;
             list.CollectionChanged += OnCollectionChanged;

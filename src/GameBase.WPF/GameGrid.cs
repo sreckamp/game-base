@@ -8,7 +8,7 @@ namespace GameBase.WPF
 {
     public class GridCellRoutedEventArgs:RoutedEventArgs
     {
-        public GridCellRoutedEventArgs(RoutedEvent evnt, DPoint cell) : base(evnt)
+        public GridCellRoutedEventArgs(RoutedEvent @event, DPoint cell) : base(@event)
         {
             Cell = cell;
         }

@@ -28,7 +28,7 @@ namespace GameBase.WPF
             while (toParse.Length > 0)
             {
                 var idx = toParse.Length;
-                Operator op = Nop;
+                var op = Nop;
                 foreach (var o in m_grammar.Operators)
                 {
                     var tmp = toParse.IndexOf(o.Symbol, StringComparison.Ordinal);
