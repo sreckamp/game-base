@@ -34,13 +34,11 @@ namespace GameBase.WPF
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
-            var gc = new DPoint(-1, -1);
-            if (gc != m_lastGrid)
-            {
-                m_lastGrid = gc;
-                var args = new GridCellRoutedEventArgs(OverCellEvent, gc);
-                RaiseEvent(args);
-            }
+            var gc = new DPoint(int.MinValue, int.MinValue);
+            if (gc == m_lastGrid) return;
+            m_lastGrid = gc;
+            var args = new GridCellRoutedEventArgs(OverCellEvent, gc);
+            RaiseEvent(args);
         }
 
         private DPoint m_lastGrid = new DPoint(-1,-1);

@@ -39,7 +39,7 @@ namespace GameBase.Model
 
         public override string ToString()
         {
-            return Piece + "@" + Location;
+            return Piece + " @ " + Location;
         }
     }
 }

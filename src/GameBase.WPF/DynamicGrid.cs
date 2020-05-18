@@ -30,7 +30,7 @@ namespace GameBase.WPF
 
         protected override void OnMouseLeave(MouseEventArgs e)
         {
-            CellEntered(-1, -1);
+            CellEntered(int.MinValue, int.MinValue);
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -69,12 +69,10 @@ namespace GameBase.WPF
         private void CellEntered(int column, int row)
         {
             var gc = new DPoint(column, row);
-            if (gc != m_lastCell)
-            {
-                m_lastCell = gc;
-                var args = new GridCellRoutedEventArgs(OverCellEvent, gc);
-                RaiseEvent(args);
-            }
+            if (gc == m_lastCell) return;
+            m_lastCell = gc;
+            var args = new GridCellRoutedEventArgs(OverCellEvent, gc);
+            RaiseEvent(args);
         }
 
         #endregion
@@ -82,7 +80,7 @@ namespace GameBase.WPF
         #region Columns
 
         public static readonly DependencyProperty ColumnsProperty =
-        DependencyProperty.RegisterAttached("Columns", typeof(int), typeof(DynamicGrid),
+        DependencyProperty.RegisterAttached(nameof(Columns), typeof(int), typeof(DynamicGrid),
             new PropertyMetadata(0, ColumnsChanged));
 
         public static void ColumnsChanged(DependencyObject obj,
@@ -120,7 +118,7 @@ namespace GameBase.WPF
 
         public static readonly DependencyProperty ColumnWidthProperty =
         DependencyProperty.RegisterAttached(
-            "ColumnWidth", typeof(int), typeof(DynamicGrid),
+            nameof(ColumnWidth), typeof(int), typeof(DynamicGrid),
             new PropertyMetadata(-1, ColumnWidthChanged));
 
         public static void ColumnWidthChanged(DependencyObject obj,
@@ -137,14 +135,7 @@ namespace GameBase.WPF
             get => (int)GetValue(ColumnWidthProperty);
             set
             {
-                if (value < 0)
-                {
-                    m_columnWidth = new GridLength(1, GridUnitType.Star);
-                }
-                else
-                {
-                    m_columnWidth = new GridLength(value);
-                }
+                m_columnWidth = value < 0 ? new GridLength(1, GridUnitType.Star) : new GridLength(value);
                 foreach (var cd in ColumnDefinitions)
                 {
                     cd.Width = m_columnWidth;
@@ -157,7 +148,7 @@ namespace GameBase.WPF
         #region Rows
 
         public static readonly DependencyProperty RowsProperty =
-            DependencyProperty.RegisterAttached("Rows", typeof(int), typeof(DynamicGrid),
+            DependencyProperty.RegisterAttached(nameof(Rows), typeof(int), typeof(DynamicGrid),
                 new PropertyMetadata(0, RowsChanged));
 
         public static void RowsChanged(DependencyObject obj,
@@ -194,7 +185,7 @@ namespace GameBase.WPF
         private GridLength m_rowHeight = new GridLength(1, GridUnitType.Star);
 
         public static readonly DependencyProperty RowHeightProperty =
-            DependencyProperty.RegisterAttached("RowHeight", typeof(int), typeof(DynamicGrid),
+            DependencyProperty.RegisterAttached(nameof(RowHeight), typeof(int), typeof(DynamicGrid),
                 new PropertyMetadata(-1, RowHeightChanged));
 
         public static void RowHeightChanged(DependencyObject obj,
@@ -212,14 +203,7 @@ namespace GameBase.WPF
 
             set
             {
-                if (value < 0)
-                {
-                    m_rowHeight = new GridLength(1, GridUnitType.Star);
-                }
-                else
-                {
-                    m_rowHeight = new GridLength(value);
-                }
+                m_rowHeight = value < 0 ? new GridLength(1, GridUnitType.Star) : new GridLength(value);
                 foreach (var rd in RowDefinitions)
                 {
                     rd.Height = m_rowHeight;

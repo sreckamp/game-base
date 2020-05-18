@@ -6,50 +6,33 @@ using GameBase.Model.Rules;
 
 namespace GameBase.Model
 {
-    public abstract class GameBoard<T> : IGameBoard<T>
+    public abstract class Board<T> : IGameBoard<T>
     {
-        // private readonly IPlaceRule<T> m_placeRule;
         private readonly Point m_minCorner;
         private readonly Point m_maxCorner;
         private readonly T m_emptyPiece;
 
         // ReSharper disable once UnusedMember.Global
-        protected GameBoard(/*IPlaceRule<T> placeRule, */T emptyPiece, int width = 0, int height = 0):
-            this(//placeRule,
+        protected Board(T emptyPiece, int width = 0, int height = 0):
+            this(
                 emptyPiece,
                 new Point(width == 0 ? int.MinValue : 0, height == 0 ? int.MinValue : 0),
                 new Point(width == 0 ? int.MaxValue : width -1, height == 0 ? int.MaxValue : height-1))
         { }
 
-        private GameBoard(/*IPlaceRule<T> placeRule, */T emptyPiece, Point minCorner, Point maxCorner)
+        private Board(T emptyPiece, Point minCorner, Point maxCorner)
         {
             MinXChanged += (sender, args) => { };
             MinYChanged += (sender, args) => { };
             MaxXChanged += (sender, args) => { };
             MaxYChanged += (sender, args) => { };
             m_emptyPiece = emptyPiece;
-            // m_placeRule = placeRule;
             m_minCorner = minCorner;
             m_maxCorner = maxCorner;
-            // AvailableLocations = new ObservableList<Point>();
             Placements = new ObservableList<Placement<T>>();
         }
 
-        // public ObservableList<Point> AvailableLocations { get; }
         public ObservableList<Placement<T>> Placements { get; }
-
-        // public IEnumerable<Point> GetAvailableMoves(T piece)
-        // {
-        //     return piece.Equals(m_emptyPiece)
-        //         ? Enumerable.Empty<Point>()
-        //         : AvailableLocations.SelectMany(GetOpenLocations)
-        //             .Where(m => m_placeRule.Applies(this, piece, m) && m_placeRule.Fits(this, piece, m));
-        // }
-
-        protected virtual IEnumerable<Point> GetOpenLocations(Point point)
-        {
-            return Enumerable.Empty<Point>();
-        }
 
         public event EventHandler<ChangedValueArgs<int>> MinXChanged;
         private int m_minX;
@@ -126,22 +109,8 @@ namespace GameBase.Model
             }
         }
 
-        // /// <summary>
-        // /// Add available locations based on the given placement
-        // /// </summary>
-        // /// <param name="placement">The newly added placement</param>
-        // protected virtual void AddAvailableLocations(Placement<T> placement)
-        // {
-        //
-        // }
-
         // ReSharper disable once UnusedMethodReturnValue.Global
         public bool Add(Placement<T> placement)
-        {
-            return Add(placement, true);
-        }
-
-        private bool Add(Placement<T> placement, bool mustBeAvailable)
         {
             if (placement.Location.X < m_minCorner.X
                 || placement.Location.Y < m_minCorner.Y
@@ -151,7 +120,7 @@ namespace GameBase.Model
                 throw new IndexOutOfRangeException();
             }
 
-            
+
             // if (!AvailableLocations.Contains(placement.Location))
             // {
             //     if (mustBeAvailable)
@@ -170,13 +139,13 @@ namespace GameBase.Model
             for (; i < Placements.Count; i++)
             {
                 var comp = placement.CompareTo(Placements[i]);
-                if (comp == 0)
-                {
-                    if (mustBeAvailable) return false;
-                    Placements.RemoveAt(i);
-                    Placements.Insert(i, placement);
-                    break;
-                }
+                if (comp == 0) return false;
+                // {
+                //     if (mustBeAvailable) return false;
+                //     Placements.RemoveAt(i);
+                //     Placements.Insert(i, placement);
+                //     break;
+                // }
 
                 if (comp >= 0) continue;
                 Placements.Insert(i, placement);
@@ -210,7 +179,6 @@ namespace GameBase.Model
         public virtual void Clear()
         {
             MaxX = MinX = MaxY = MinY = 0;
-            // AvailableLocations.Clear();
             Placements.Clear();
         }
     }
