@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/sreckamp/game-base/</projectUrl>
+    <!--iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl-->
+    <description>$description$</description>
+    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright 2020</copyright>
+    <!--TargetFrameworks>netstandard2.0;netcoreapp2.1;netcoreapp3.0;net462;net47;net471;net472;netstandard2.1;netcoreapp3.1;net48</TargetFrameworks-->
+  </metadata>
+  <dependencies>
+    <group targetFramework=".NETFramework4.8">
+      <!--<dependency id="Newtonsoft.Json" version="12.0.3" exclude="Build,Analyzers" />-->
+    </group>
+  </dependencies>
+</package>

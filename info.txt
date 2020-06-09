@@ -1,0 +1,6 @@
+nuget pack GameBase.Model.csproj -Build -IncludeReferencedProjects -Properties Configuration=Release
+
+https://github.com/sreckamp/game-base/packages?package_type=NuGet
+https://help.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-dotnet-cli-for-use-with-github-packages
+https://www.jetbrains.com/help/rider/Creating_NuGet_packages.html
+https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio-net-framework
