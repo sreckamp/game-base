@@ -13,21 +13,21 @@ namespace GameBase.WPF
         }
 
         private static readonly MathGrammar SGrammar = new MathGrammar();
-        private static readonly Dictionary<Type, IOperators> SsOperators = new Dictionary<Type,IOperators>();
+        private static readonly Dictionary<Type, IOperators> SOperators = new Dictionary<Type,IOperators>();
 
         static MathStringFormulaParser()
         {
-            SsOperators[typeof(SByte)] = SsOperators[typeof(sbyte)] = new SbyteOperators();
-            SsOperators[typeof(Byte)] = SsOperators[typeof(byte)] = new ByteOperators();
-            SsOperators[typeof(Int16)] = SsOperators[typeof(short)] = new ShortOperators();
-            SsOperators[typeof(UInt16)] = SsOperators[typeof(ushort)] = new UshortOperators();
-            SsOperators[typeof(Int32)] = SsOperators[typeof(int)] = new IntOperators();
-            SsOperators[typeof(UInt32)] = SsOperators[typeof(uint)] = new UintOperators();
-            SsOperators[typeof(Int64)] = SsOperators[typeof(long)] = new LongOperators();
-            SsOperators[typeof(UInt64)] = SsOperators[typeof(ulong)] = new UlongOperators();
-            SsOperators[typeof(float)] = new FloatOperators();
-            SsOperators[typeof(Double)] = SsOperators[typeof(double)] = new DoubleOperators();
-            SsOperators[typeof(Decimal)] = SsOperators[typeof(decimal)] = new DecimalOperators();
+            SOperators[typeof(SByte)] = SOperators[typeof(sbyte)] = new SbyteOperators();
+            SOperators[typeof(Byte)] = SOperators[typeof(byte)] = new ByteOperators();
+            SOperators[typeof(Int16)] = SOperators[typeof(short)] = new ShortOperators();
+            SOperators[typeof(UInt16)] = SOperators[typeof(ushort)] = new UshortOperators();
+            SOperators[typeof(Int32)] = SOperators[typeof(int)] = new IntOperators();
+            SOperators[typeof(UInt32)] = SOperators[typeof(uint)] = new UintOperators();
+            SOperators[typeof(Int64)] = SOperators[typeof(long)] = new LongOperators();
+            SOperators[typeof(UInt64)] = SOperators[typeof(ulong)] = new UlongOperators();
+            SOperators[typeof(float)] = new FloatOperators();
+            SOperators[typeof(Double)] = SOperators[typeof(double)] = new DoubleOperators();
+            SOperators[typeof(Decimal)] = SOperators[typeof(decimal)] = new DecimalOperators();
         }
 
         private class MathGrammar : Grammar
@@ -48,7 +48,7 @@ namespace GameBase.WPF
 
             protected override ConstantProcess GetConstantProcess(string token)
             {
-                var ops = (IOperators<T>)SsOperators[typeof(T)];
+                var ops = (IOperators<T>)SOperators[typeof(T)];
                 return ops.IsParsable(token) ? new ConstantProcess(ops.Parse(token)) : null;
             }
         }
@@ -61,7 +61,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SsOperators[typeof(T)];
+                var ops = (IOperators<T>)SOperators[typeof(T)];
                 return ops.Add(left,right);
             }
 
@@ -75,7 +75,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SsOperators[typeof(T)];
+                var ops = (IOperators<T>)SOperators[typeof(T)];
                 return ops.Subtract(left, right);
             }
         }
@@ -88,7 +88,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SsOperators[typeof(T)];
+                var ops = (IOperators<T>)SOperators[typeof(T)];
                 return ops.Multiply(left, right);
             }
         }
@@ -101,7 +101,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SsOperators[typeof(T)];
+                var ops = (IOperators<T>)SOperators[typeof(T)];
                 return ops.Divide(left, right);
             }
         }
@@ -115,7 +115,7 @@ namespace GameBase.WPF
 
             protected override T Execute(T left, T right)
             {
-                var ops = (IOperators<T>)SsOperators[typeof(T)];
+                var ops = (IOperators<T>)SOperators[typeof(T)];
                 return ops.Modulo(left, right);
             }
         }
@@ -186,11 +186,9 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
+                if (!token.StartsWith("0x")) return byte.Parse(token, style);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
                 return byte.Parse(token, style);
             }
         }
@@ -218,11 +216,9 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
+                if (!token.StartsWith("0x")) return short.Parse(token, style);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
                 return short.Parse(token, style);
             }
         }
@@ -370,11 +366,9 @@ namespace GameBase.WPF
             {
                 var style = NumberStyles.Integer;
                 token = token.ToLower();
-                if (token.StartsWith("0x"))
-                {
-                    token = token.Substring(2);
-                    style = NumberStyles.HexNumber;
-                }
+                if (!token.StartsWith("0x")) return ulong.Parse(token, style);
+                token = token.Substring(2);
+                style = NumberStyles.HexNumber;
                 return ulong.Parse(token, style);
             }
         }

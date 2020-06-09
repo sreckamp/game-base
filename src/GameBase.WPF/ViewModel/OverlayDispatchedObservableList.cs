@@ -2,16 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Windows;
+using System.Linq;
 using GameBase.Model;
 
 namespace GameBase.WPF.ViewModel
 {
-    public class OverlayDispatchedObservableList<T> : INotifyCollectionChanged, IList<T> where T : notnull
+    public class OverlayObservableList<T> : INotifyCollectionChanged, IEnumerable<T> where T : notnull
     {
         private readonly IObservableList<T>[] m_lists;
 
-        public OverlayDispatchedObservableList(params IObservableList<T>[] lists)
+        public OverlayObservableList(params IObservableList<T>[] lists)
         {
             m_lists = lists;
             foreach (var list in lists)
@@ -24,15 +24,15 @@ namespace GameBase.WPF.ViewModel
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (Application.Current.Dispatcher?.CheckAccess() ?? true)
-            {
+            // if (Application.Current.Dispatcher?.CheckAccess() ?? true)
+            // {
                 CollectionChanged?.Invoke(this, e);
-            }
-            else
-            {
-                Application.Current.Dispatcher.Invoke(
-                    new Action<object, NotifyCollectionChangedEventArgs>(OnCollectionChanged), sender, e);
-            }
+            // }
+            // else
+            // {
+            //     Application.Current.Dispatcher.Invoke(
+            //         new Action<object, NotifyCollectionChangedEventArgs>(OnCollectionChanged), sender, e);
+            // }
         }
 
         #region INotifyCollectionChanged Members
@@ -126,19 +126,7 @@ namespace GameBase.WPF.ViewModel
             }
         }
 
-        public int Count
-        {
-            get
-            {
-                var count = 0;
-                foreach (var l in m_lists)
-                {
-                    count += l.Count;
-                }
-
-                return count;
-            }
-        }
+        public int Count => m_lists.Sum(l => l.Count);
 
         public bool IsReadOnly => true;
 
@@ -184,15 +172,8 @@ namespace GameBase.WPF.ViewModel
 
             public bool MoveNext()
             {
-                if (!m_active.Current?.MoveNext() ?? true)
-                {
-                    if (!m_active.MoveNext() || !m_active.Current.MoveNext())
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
+                if (m_active.Current?.MoveNext() ?? false) return true;
+                return m_active.MoveNext() && (m_active.Current?.MoveNext() ?? false);
             }
 
             public void Reset()
@@ -210,20 +191,18 @@ namespace GameBase.WPF.ViewModel
 
             private bool m_disposedValue; // To detect redundant calls
 
-            protected virtual void Dispose(bool disposing)
+            protected void Dispose(bool disposing)
             {
-                if (!m_disposedValue)
+                if (m_disposedValue) return;
+                if (disposing)
                 {
-                    if (disposing)
-                    {
-                        // TODO: dispose managed state (managed objects).
-                    }
-
-                    // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                    // TODO: set large fields to null.
-
-                    m_disposedValue = true;
+                    // TODO: dispose managed state (managed objects).
                 }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                m_disposedValue = true;
             }
 
             // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.

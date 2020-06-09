@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -9,6 +8,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
+using GameBase.WPF.ViewModel;
 
 namespace GameBase.WPF
 {
@@ -18,9 +18,9 @@ namespace GameBase.WPF
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            return (values[1] is IEnumerable e) && e.Cast<object>().Contains(values[0])
-                ? (values.Length > 2 ? values[2] : DependencyProperty.UnsetValue)
-                : (values.Length > 3 ? values[3] : DependencyProperty.UnsetValue);
+            return values[1] is IEnumerable e && e.Cast<object>().Contains(values[0])
+                ? values.Length > 2 ? values[2] : DependencyProperty.UnsetValue
+                : values.Length > 3 ? values[3] : DependencyProperty.UnsetValue;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -100,8 +100,8 @@ namespace GameBase.WPF
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             return values[0] is bool bv && bv || values[0] != DependencyProperty.UnsetValue
-                ? (values.Length > 1 ? values[1] : DependencyProperty.UnsetValue)
-                : (values.Length > 2 ? values[2] : DependencyProperty.UnsetValue);
+                ? values.Length > 1 ? values[1] : DependencyProperty.UnsetValue
+                : values.Length > 2 ? values[2] : DependencyProperty.UnsetValue;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -161,10 +161,10 @@ namespace GameBase.WPF
 
         public override object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            parameter = parameter ?? "A:A";
+            parameter ??= "A:A";
             SplitParameter(parameter.ToString(), out var names, out var formula);
 
-            var idx = formula.IndexOf("?");
+            var idx = formula.IndexOf("?", StringComparison.Ordinal);
             string trueName = null;
             object trueValue = null;
             string falseName = null;
@@ -232,21 +232,26 @@ namespace GameBase.WPF
         protected override bool ObjectToTypedValue(object value)
         {
             var val = false;
-            if (value is Double)
+            switch (value)
             {
-                val = !((Double)value).Equals(0);
-            }
-            else if (value is bool)
-            {
-                val = (bool)value;
-            }
-            else if (value is Visibility)
-            {
-                val = (Visibility)value == Visibility.Visible;
-            }
-            else if (value != null && value != DependencyProperty.UnsetValue)
-            {
-                val = true;
+                case double d:
+                    val = !d.Equals(0);
+                    break;
+                case bool b:
+                    val = b;
+                    break;
+                case Visibility visibility:
+                    val = visibility == Visibility.Visible;
+                    break;
+                default:
+                {
+                    if (value != null && value != DependencyProperty.UnsetValue)
+                    {
+                        val = true;
+                    }
+
+                    break;
+                }
             }
             return val;
         }
@@ -261,13 +266,15 @@ namespace GameBase.WPF
         protected override double ObjectToTypedValue(object value)
         {
             double val = 0;
-            if (value is Double || value is int)
+            switch (value)
             {
-                val = (double)value;
-            }
-            else if (value is string str)
-            {
-                double.TryParse(str, out val);
+                case double _:
+                case int _:
+                    val = (double)value;
+                    break;
+                case string str:
+                    double.TryParse(str, out val);
+                    break;
             }
             return val;
         }
@@ -295,21 +302,22 @@ namespace GameBase.WPF
         protected override int ObjectToTypedValue(object value)
         {
             var val = 0;
-            if (value is double)
+            switch (value)
             {
-                val = (int)Math.Round((double)value,0);
-            }
-            else if (value is int)
-            {
-                val = (int)value;
-            }
-            else if (value is string)
-            {
-                try
-                {
-                    val = int.Parse((string)value);
-                }
-                catch (FormatException) { }
+                case double d:
+                    val = (int)Math.Round(d,0);
+                    break;
+                case int i:
+                    val = i;
+                    break;
+                case string s:
+                    try
+                    {
+                        val = int.Parse(s);
+                    }
+                    catch (FormatException) { }
+
+                    break;
             }
             return val;
         }
@@ -321,18 +329,12 @@ namespace GameBase.WPF
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool)
+            if (value is bool b)
             {
-                if ((bool)value)
-                {
-                    return Visibility.Visible;
-                }
+                return b.ToVisibility();
             }
-            else if (value != null && value != DependencyProperty.UnsetValue)
-            {
-                return Visibility.Visible;
-            }
-            return Visibility.Hidden;
+
+            return (value != null && value != DependencyProperty.UnsetValue).ToVisibility();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -393,7 +395,7 @@ namespace GameBase.WPF
 
         public virtual object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (parameter == null) parameter = "A:A";
+            parameter ??= "A:A";
             SplitParameter(parameter.ToString(), out var names, out var formula);
             var data = PrepareValues(names, values);
             return Calculate(formula, data);
@@ -414,7 +416,7 @@ namespace GameBase.WPF
             {
                 throw new ArgumentException("Expected format is variableList=>formula.");
             }
-            var idx = temp.IndexOf(":");
+            var idx = temp.IndexOf(":", StringComparison.Ordinal);
             formula = temp.Substring(idx + ":".Length);
             names = temp.Substring(0, idx).Split(',');
             if (names.Length == 1 && string.Empty.Equals(names[0]))
@@ -423,12 +425,7 @@ namespace GameBase.WPF
             }
         }
 
-        protected Dictionary<string, T> PrepareValues(string[] names, object[] values)
-        {
-            return PrepareValues(names, values, null);
-        }
-
-        protected Dictionary<string, T> PrepareValues(string[] names, object[] values, Dictionary<string, object> rawData)
+        protected Dictionary<string, T> PrepareValues(string[] names, object[] values, Dictionary<string, object> rawData = null)
         {
             if (names.Length > values.Length)
             {

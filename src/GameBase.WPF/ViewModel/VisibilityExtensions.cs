@@ -5,6 +5,7 @@ namespace GameBase.WPF.ViewModel
 {
     public static class VisibilityExtensions
     {
+        public static Visibility ToVisibility(this bool vis) => vis ? Visibility.Visible : Visibility.Hidden;
         public static Visibility Or(this Visibility vis, params Visibility[] others)
         {
             return vis == Visibility.Visible || others.Any(b => b == Visibility.Visible)

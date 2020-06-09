@@ -33,11 +33,7 @@ namespace GameBase.WPF
 
             protected override ConstantProcess GetConstantProcess(string token)
             {
-                if (m_constants.ContainsKey(token))
-                {
-                    return m_constants[token];
-                }
-                return null;
+                return m_constants.ContainsKey(token) ? m_constants[token] : null;
             }
         }
 

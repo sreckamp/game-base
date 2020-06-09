@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using GameBase.Model.Rules;
 
 namespace GameBase.Model
 {

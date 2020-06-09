@@ -50,7 +50,6 @@ namespace GameBase.Model
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    Debug.WriteLine($"Add:{e.NewStartingIndex}");
                     foreach (var t in e.NewItems)
                     {
                         Add((TB) t);
@@ -71,7 +70,6 @@ namespace GameBase.Model
                         Remove((TB) e.OldItems[i], e.OldStartingIndex + i);
                     }
 
-                    Debug.WriteLine($"ReplaceAdd:{e.NewStartingIndex}");
                     foreach (var t in e.NewItems)
                     {
                         Add((TB) t);
@@ -96,7 +94,7 @@ namespace GameBase.Model
         private void CoreAdd(TB m)
         {
             if (m_modelToViewModel.ContainsKey(m)) return;
-            Debug.WriteLine($"Add:{m}");
+            Debug.WriteLine($"MappingCollection.CoreAdd:{m}");
             m_constructorParams[0] = m;
             var vm = (T) m_constructor.Invoke(m_constructorParams);
             m_modelToViewModel[m] = vm;
@@ -107,26 +105,14 @@ namespace GameBase.Model
         protected virtual void Remove(TB m, int idx)
         {
             if (!m_modelToViewModel.ContainsKey(m)) return;
-            Debug.WriteLine($"Remove:{m},{idx}");
+            Debug.WriteLine($"MappingCollection.Remove:{m},{idx}");
             var vm = m_modelToViewModel[m];
             m_modelToViewModel.Remove(m);
             m_viewModelToModel.Remove(vm);
             NotifyCollectionChanged(NotifyCollectionChangedAction.Remove, vm, idx);
         }
 
-        public T this[TB item]
-        {
-            get
-            {
-                var val = default(T);
-                if (item != null)
-                {
-                    val = m_modelToViewModel[item];
-                }
-
-                return val;
-            }
-        }
+        public T this[TB item] => m_modelToViewModel[item];
 
         #region INotifyCollectionChanged Members
 
@@ -136,7 +122,7 @@ namespace GameBase.Model
             int idx = -1)
         {
             var args = new NotifyCollectionChangedEventArgs(action, vm, idx);
-            CollectionChanged.Invoke(this, args);
+            CollectionChanged?.Invoke(this, args);
         }
 
         #endregion
@@ -202,7 +188,7 @@ namespace GameBase.Model
 
         public bool Contains(T item)
         {
-            return m_models.Contains(m_viewModelToModel[item]);
+            return item != null && m_models.Contains(m_viewModelToModel[item]);
         }
 
         public void CopyTo(T[] array, int arrayIndex)

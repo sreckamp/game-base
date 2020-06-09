@@ -1,9 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
 using System.Windows;
-using System.Windows.Controls;
 using GameBase.Model;
 using DPoint = System.Drawing.Point;
 
@@ -14,11 +11,16 @@ namespace GameBase.WPF.ViewModel
         protected readonly Placement<T> Placement;
         protected readonly IGridManager GridManager;
 
-        protected PlacementViewModel(Placement<T> placement, IGridManager gridManager = null)
+        protected PlacementViewModel(Placement<T> placement)
+            : this(placement, NopGridManager.Instance)
+        {
+        }
+
+        protected PlacementViewModel(Placement<T> placement, IGridManager gridManager)
         {
             PropertyChanged += (sender, args) => { };
             Placement = placement;
-            GridManager = gridManager ?? DefaultGridManager.Instance;
+            GridManager = gridManager;
             GridManager.StartColumnChanged += (sender, args) => NotifyPropertyChanged(nameof(Column));
             GridManager.StartColumnChanged += (sender, args) => NotifyPropertyChanged(nameof(IsOnGrid));
             GridManager.StartRowChanged += (sender, args) => NotifyPropertyChanged(nameof(Row));
@@ -38,10 +40,13 @@ namespace GameBase.WPF.ViewModel
             NotifyPropertyChanged(nameof(IsOnGrid));
         }
 
-        public bool IsOnGrid => Column >= 0 && Column < GridManager.Columns
-                                && Row >= 0 && Row < GridManager.Rows;
-        public int Column => Location.X - GridManager.StartColumn;
-        public int Row => Location.Y - GridManager.StartRow;
+        public bool IsOnGrid => RawColumn >= 0 && RawColumn < GridManager.Columns
+                                              && RawRow >= 0 && RawRow < GridManager.Rows;
+
+        private int RawColumn => Location.X - GridManager.StartColumn;
+        public int Column => Math.Max(0, RawColumn);
+        private int RawRow => Location.Y - GridManager.StartRow;
+        public int Row => Math.Max(0, RawRow);
 
         #region INotifyPropertyChanged Members
 
@@ -49,25 +54,25 @@ namespace GameBase.WPF.ViewModel
 
         protected void NotifyPropertyChanged(string name)
         {
-            if (Application.Current.Dispatcher.CheckAccess())
-            {
-                Debug.WriteLine($"PlacementViewModel.NotifyPropertyChanged({name})");
+            // if (Application.Current.Dispatcher.CheckAccess())
+            // {
+                // Debug.WriteLine($"PlacementViewModel<{typeof(T).Name}>.NotifyPropertyChanged({name})");
                 PropertyChanged.Invoke(this, new PropertyChangedEventArgs(name));
-            }
-            else
-            {
-                Debug.WriteLine($"Invoke PlacementViewModel.NotifyPropertyChanged({name})");
-                Application.Current.Dispatcher.Invoke(new Action<string>(NotifyPropertyChanged), name);
-            }
+            // }
+            // else
+            // {
+            //     // Debug.WriteLine($"Invoke PlacementViewModel<{typeof(T).Name}>.NotifyPropertyChanged({name})");
+            //     Application.Current.Dispatcher.Invoke(new Action<string>(NotifyPropertyChanged), name);
+            // }
         }
 
         #endregion
 
-        private class DefaultGridManager : IGridManager
+        private class NopGridManager : IGridManager
         {
-            public static readonly IGridManager Instance = new DefaultGridManager();
+            public static readonly IGridManager Instance = new NopGridManager();
 
-            private DefaultGridManager()
+            private NopGridManager()
             {
                 StartColumnChanged += (sender, args) => { };
                 StartRowChanged += (sender, args) => { };

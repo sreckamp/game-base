@@ -31,7 +31,7 @@ namespace GameBase.Model
 
         public ObservableList()
         {
-            CollectionChanged += (sender, args) => { };
+            CollectionChanged += (sender, args) => { }; //Debug.WriteLine($"ObservableList.CollectionChanged {typeof(T).Name}"); };
             m_base = new List<T>();
         }
 
