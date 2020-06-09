@@ -28,7 +28,7 @@ namespace GameBase.Model
 
         public event EventHandler<ChangedValueArgs<T>> ValueChanged;
         private event EventHandler ValueChangeOccured;
-        private T Value
+        public T Value
         {
             get => m_value;
             set
