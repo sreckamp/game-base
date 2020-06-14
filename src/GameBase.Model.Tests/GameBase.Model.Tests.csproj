@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>8</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.10.3"/>
+    <PackageReference Include="xunit" Version="2.1.0"/>
+    <PackageReference Include="xunit.abstractions" Version="2.0.0"/>
+    <PackageReference Include="xunit.assert" Version="2.1.0"/>
+    <PackageReference Include="xunit.core" Version="2.1.0"/>
+    <PackageReference Include="xunit.extensibility.core" Version="2.1.0"/>
+    <PackageReference Include="xunit.extensibility.execution" Version="2.1.0"/>
+  </ItemGroup>
+</Project>
