@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("GameBase.Console")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Tools for building games using console output")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Continental AG")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("GameBase.Console")]
-[assembly: AssemblyCopyright("Copyright © Continental AG 2019")]
+[assembly: AssemblyCopyright("Copyright ©2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
