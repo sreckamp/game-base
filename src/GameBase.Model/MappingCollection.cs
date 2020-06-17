@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -15,7 +14,7 @@ namespace GameBase.Model
     /// <typeparam name="T">The target Type, needs to have a constructor that takes
     /// the base as an argument</typeparam>
     /// <typeparam name="TB">The base type that the source collection is based on.</typeparam>
-    public class MappingCollection<T, TB> : IObservableList<T> where T : notnull where TB : notnull
+    public sealed class MappingCollection<T, TB> : IObservableList<T> where T : notnull where TB : notnull
     {
         private readonly IObservableList<TB> m_models;
         private readonly Dictionary<TB, T> m_modelToViewModel = new Dictionary<TB, T>();
@@ -86,7 +85,7 @@ namespace GameBase.Model
             }
         }
 
-        protected virtual void Add(TB m)
+        private void Add(TB m)
         {
             CoreAdd(m);
         }
@@ -94,7 +93,6 @@ namespace GameBase.Model
         private void CoreAdd(TB m)
         {
             if (m_modelToViewModel.ContainsKey(m)) return;
-            Debug.WriteLine($"MappingCollection.CoreAdd:{m}");
             m_constructorParams[0] = m;
             var vm = (T) m_constructor.Invoke(m_constructorParams);
             m_modelToViewModel[m] = vm;
@@ -102,10 +100,9 @@ namespace GameBase.Model
             NotifyCollectionChanged(NotifyCollectionChangedAction.Add, vm, m_models.IndexOf(m));
         }
 
-        protected virtual void Remove(TB m, int idx)
+        private void Remove(TB m, int idx)
         {
             if (!m_modelToViewModel.ContainsKey(m)) return;
-            Debug.WriteLine($"MappingCollection.Remove:{m},{idx}");
             var vm = m_modelToViewModel[m];
             m_modelToViewModel.Remove(m);
             m_viewModelToModel.Remove(vm);
@@ -118,7 +115,7 @@ namespace GameBase.Model
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        protected virtual void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default,
+        private void NotifyCollectionChanged(NotifyCollectionChangedAction action, T vm = default,
             int idx = -1)
         {
             var args = new NotifyCollectionChangedEventArgs(action, vm, idx);

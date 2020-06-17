@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -33,7 +32,6 @@ namespace GameBase.WPF
         {
             if (MonitorMouse)
             {
-                Debug.WriteLine("DynamicGrid.OnMouseLeave");
                 CellEntered(int.MinValue, int.MinValue);
             }
             else
@@ -158,7 +156,6 @@ namespace GameBase.WPF
 
         private void ColumnsChanged(int value)
         {
-            Debug.WriteLine($"DynamicGrid.Columns ColumnDefinition.Count(Before): {ColumnDefinitions.Count}");
             while (ColumnDefinitions.Count > value)
             {
                 ColumnDefinitions.RemoveAt(0);
@@ -167,7 +164,6 @@ namespace GameBase.WPF
             {
                 ColumnDefinitions.Add(new ColumnDefinition { Width = m_columnWidth });
             }
-            Debug.WriteLine($"DynamicGrid.Columns ColumnDefinition.Count (After): {ColumnDefinitions.Count}");
         }
 
         public int Columns
@@ -232,7 +228,6 @@ namespace GameBase.WPF
 
         private void RowsChanged(int value)
         {
-            Debug.WriteLine($"DynamicGrid.Rows RowDefinitions.Count(Before): {RowDefinitions.Count}");
             while (RowDefinitions.Count > value)
             {
                 RowDefinitions.RemoveAt(0);
@@ -241,7 +236,6 @@ namespace GameBase.WPF
             {
                 RowDefinitions.Add(new RowDefinition { Height = m_rowHeight });
             }
-            Debug.WriteLine($"DynamicGrid.Rows RowDefinitions.Count (After): {RowDefinitions.Count}");
         }
 
         public int Rows
