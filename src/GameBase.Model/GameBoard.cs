@@ -91,15 +91,9 @@ namespace GameBase.Model
             {
                 foreach (var p in Placements)
                 {
-                    var cmpX = p.Location.X.CompareTo(pnt.X);
-                    var cmpY = p.Location.Y.CompareTo(pnt.Y);
-                    if (cmpX == 0 && cmpY == 0)
+                    if(p.Location.X == pnt.X && p.Location.Y == pnt.Y)
                     {
                         return p.Piece;
-                    }
-                    if (cmpX > 0 || cmpX == 0 && cmpY > 0)
-                    {
-                        break;
                     }
                 }
                 return m_emptyPiece;
